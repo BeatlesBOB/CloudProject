@@ -21,9 +21,7 @@ function getCurrentUser(id){
 function getAllPlayerForRoom(room){
     return users.filter(user => user.room === room)
 }
-function getUserIdByUsername(username){
-    return users.find(user => user.username==username)
-}
+
 
 function addPoint(id,point){
     const user = users.find(user => user.id==id);
@@ -35,6 +33,5 @@ module.exports ={
     getCurrentUser,
     getAllPlayerForRoom,
     userLeft,
-    getUserIdByUsername,
     addPoint
 }

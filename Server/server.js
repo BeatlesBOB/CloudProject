@@ -8,7 +8,7 @@ const io = require('socket.io')(server, {
         methods: ["GET", "POST"]
       }
 });
-const {userJoin,getCurrentUser,userLeft,getAllPlayerForRoom,getUserIdByUsername} = require("./utilis/user")
+const {userJoin,getCurrentUser,userLeft,getAllPlayerForRoom,addPoint} = require("./utilis/user")
 const user = require('./utilis/user');
 const { cpuUsage } = require('process');
 var CronJob = require('cron').CronJob;
@@ -19,6 +19,7 @@ io.on('connection', socket => {
 });
 
 io.of("/Genre").on("connection",(socket)=>{
+    
     socket.emit("Bienvenue","Pret a jouer des coudes");
 
     socket.on("disconnect",() =>{
@@ -32,6 +33,10 @@ io.of("/Genre").on("connection",(socket)=>{
             });
         }
     });
+
+    socket.on("addPoint",(socket,point)=>{
+        addPoint(socket.id,point);
+    })
 
     socket.on("joinRoom", ({userName,room}) =>{
         const user = userJoin(socket.id,userName,room,0);
@@ -57,12 +62,14 @@ io.of("/Genre").on("connection",(socket)=>{
         var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
         io.of("/Genre").to(user.room).emit('message', {from : user.username, message : msg,time});
     });
+
     socket.on('chatMessagePrivate', ({idReceiver,msg}) => {
         const user = getCurrentUser(socket.id);
         var today = new Date();
         var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
         socket.to(idReceiver).emit('privateMessage', {from : user.username, message : msg,time}); 
     });
+
 });
 
 io.of("/Custom").on("connection",(socket)=>{
@@ -82,6 +89,7 @@ io.of("/Custom").on("connection",(socket)=>{
     });
 
     socket.on("joinRoom", ({userName,room}) =>{
+        
         const user = userJoin(socket.id,userName,room,0);
         socket.join(user.room);
         
@@ -91,19 +99,27 @@ io.of("/Custom").on("connection",(socket)=>{
             room: user.room,
             users: getAllPlayerForRoom(user.room)
         });
+
         if(getAllPlayerForRoom(user.room).length > 1)
         {
             io.of("/Custom").to(user.room).emit('Waiting',user.username+" attendez la prochaine musique avant de pouvoir jouer");
         }
+
         if(getAllPlayerForRoom(user.room).length === 1)
         {
             io.of("/Custom").to(user.room).emit('Admin',true);
         }
+
     });
-    socket.on("startGame"),(socket,playlist)=>{
+
+    socket.on("startGame",(socket,playlist)=>{
         const user = getCurrentUser(socket.id)
         launchCustomGame(user,playlist)
-    }
+    })
+    
+    socket.on("addPoint",(socket,point)=>{
+        addPoint(socket.id,point);
+    })
 
     socket.on('chatMessage', msg => {
         const user = getCurrentUser(socket.id);
