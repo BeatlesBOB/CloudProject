@@ -48,11 +48,9 @@ io.of("/Genre").on("connection",(socket)=>{
         });
         if(getAllPlayerForRoom(user.room).length > 1)
         {
-            console.log("already exist")
             io.of("/Genre").to(user.room).emit('Waiting',user.username+" attendez la prochaine musique avant de pouvoir jouer");
         }else{
-            console.log("don't exist")
-            launchGame(user)
+            launchGame(user);
         }
     });
 
@@ -131,6 +129,35 @@ io.of("/Custom").on("connection",(socket)=>{
 
 });
 
+app.get('/gender', function(req, res) {
+    axios('https://accounts.spotify.com/api/token',{ 
+        headers: {
+            'Content-Type' : 'application/x-www-form-urlencoded',
+            'Authorization' : 'Basic MjFlNWYxZjM3ZDg2NGJiOWJiNjA3YTg3NDhjYTQyYTc6OTkxN2RiNjE4ZjhkNDZmN2IyYWQyZjAzMTI5NmQyMzM='
+        },
+        data: 'grant_type=client_credentials',
+        method:"POST"
+     })
+    .then(tokenResponse => {
+        axios("https://api.spotify.com/v1/browse/categories",{ 
+            headers: {
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+                "Authorization": "Bearer "+tokenResponse.data.access_token
+            },
+            method:"GET"
+        })
+        .then(responseCat => {
+            return res.status(200).send(responseCat)
+        })
+        .catch(function (error) {
+            console.log(error);
+        })
+    })
+    .catch(function (error) {
+        console.log(error);
+    })
+});
 server.listen(3000);
 
 function getRandomArbitrary(min, max) {
