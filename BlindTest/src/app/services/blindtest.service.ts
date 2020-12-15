@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable, Subscriber } from 'rxjs';
 import { io } from 'socket.io-client';
+import { HttpClient } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root'
@@ -8,7 +9,7 @@ import { io } from 'socket.io-client';
 export class BlindtestService {
 
   private socket;
-  constructor() { 
+  constructor(private http: HttpClient) { 
     this.socket = io("http://localhost:3000")
 
   }
@@ -24,4 +25,9 @@ export class BlindtestService {
       })
     })
   }
+
+  getCategories(){
+    return this.http.get("http://localhost:3000/gender")
+  }
+
 }

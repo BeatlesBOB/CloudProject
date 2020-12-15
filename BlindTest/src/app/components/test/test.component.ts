@@ -21,28 +21,33 @@ export class TestComponent implements OnInit {
   constructor(private blindTestService: BlindtestService) { }
 
   ngOnInit(): void {
-    this.blindTestService.listen("newUser").subscribe( (data:any) =>{
-      console.log("New User "+data);
-    });
-    this.blindTestService.listen("roomInfo").subscribe((data:any)=>{
-      this.roomInfo = data;
-    })
-    this.blindTestService.listen("message").subscribe((data:any) => {
-      this.messages.push(data)
- 
-    })
-    this.blindTestService.listen("playlist").subscribe((data:any) =>{
-      this.song =data.song
+    // this.blindTestService.listen("newUser").subscribe( (data:any) =>{
+    //   console.log("New User "+data);
+    // });
+    // this.blindTestService.listen("roomInfo").subscribe((data:any)=>{
+    //   this.roomInfo = data;
+    // })
+    // this.blindTestService.listen("message").subscribe((data:any) => {
+    //   this.messages.push(data)
+    // })
+    // this.blindTestService.listen("playlist").subscribe((data:any) =>{
+    //   this.song =data.song
+    //   console.log(data);
+    // })
+    // this.blindTestService.listen("gameRestart").subscribe((data:any) =>{
+    //  console.log(data);
+    // })
+
+    // this.blindTestService.listen("privateMessage").subscribe((data:any) =>{
+    //   console.log(data.from);
+    //   console.log(data.message);
+    // })
+
+    this.blindTestService.getCategories().subscribe((data:any)=>{
       console.log(data);
     })
-    this.blindTestService.listen("gameRestart").subscribe((data:any) =>{
-     console.log(data);
-    })
 
-    this.blindTestService.listen("privateMessage").subscribe((data:any) =>{
-      console.log(data.from);
-      console.log(data.message);
-    })
+
   }
   
   sendMessage(){
@@ -61,5 +66,6 @@ export class TestComponent implements OnInit {
   sendPrivateMessage(){
     this.blindTestService.emit("chatMessagePrivate", {idReceiver : this.receiver.id,msg: this.sendingPrivateMessage});
   }
+
 
 }

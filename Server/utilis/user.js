@@ -1,8 +1,8 @@
 
 const users = [];
 
-function userJoin(id,username,room,point){
-    const user = {id,username,room,point};
+function userJoin(id,username,room,point,img){
+    const user = {id,username,room,point,img};
     users.push(user);
     return user;
 }

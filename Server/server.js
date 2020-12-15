@@ -1,6 +1,7 @@
 const { default: Axios } = require('axios');
 const app = require('express')();
 const server = require('http').createServer(app);
+const cors = require('cors');
 const axios = require('axios');
 const io = require('socket.io')(server, {
     cors: {
@@ -12,7 +13,7 @@ const {userJoin,getCurrentUser,userLeft,getAllPlayerForRoom,addPoint} = require(
 const user = require('./utilis/user');
 const { cpuUsage } = require('process');
 var CronJob = require('cron').CronJob;
-
+app.use(cors());
 
 
 io.on('connection', socket => {
@@ -38,8 +39,8 @@ io.of("/Genre").on("connection",(socket)=>{
         addPoint(socket.id,point);
     })
 
-    socket.on("joinRoom", ({userName,room}) =>{
-        const user = userJoin(socket.id,userName,room,0);
+    socket.on("joinRoom", ({userName,room,playerImg}) =>{
+        const user = userJoin(socket.id,userName,room,0,playerImg);
         socket.join(user.room);
         io.of("/Genre").to(user.room).emit("newUser", user.username+" est rentré dans :"+room+" faites lui une ovation");
         io.of("/Genre").to(user.room).emit("roomInfo",{
@@ -86,8 +87,8 @@ io.of("/Custom").on("connection",(socket)=>{
         }
     });
 
-    socket.on("joinRoom", ({userName,room}) =>{
-        const user = userJoin(socket.id,userName,room,0);
+    socket.on("joinRoom", ({userName,room,playerImg}) =>{
+        const user = userJoin(socket.id,userName,room,0,playerImg);
         socket.join(user.room);
         io.of("/Custom").to(user.room).emit("newUser", user.username+" est rentré dans :"+room+" faites lui une ovation");
         io.of("/Custom").to(user.room).emit("roomInfo",{
@@ -129,7 +130,7 @@ io.of("/Custom").on("connection",(socket)=>{
 
 });
 
-app.get('/gender', function(req, res) {
+app.get('/getGenre', async function(req, res) {
     axios('https://accounts.spotify.com/api/token',{ 
         headers: {
             'Content-Type' : 'application/x-www-form-urlencoded',
@@ -148,7 +149,10 @@ app.get('/gender', function(req, res) {
             method:"GET"
         })
         .then(responseCat => {
-            return res.status(200).send(responseCat)
+            return res.status(200).json({
+                statusCode: 200,
+                data: responseCat
+            });
         })
         .catch(function (error) {
             console.log(error);
@@ -157,7 +161,9 @@ app.get('/gender', function(req, res) {
     .catch(function (error) {
         console.log(error);
     })
+   
 });
+
 server.listen(3000);
 
 function getRandomArbitrary(min, max) {
@@ -229,7 +235,7 @@ function launchGame(user){
                     let validResponse= [];
                     responsePlaylist.data.tracks.items.forEach(element => {
                         if(element.track.preview_url != null){
-                            validResponse.push({song: element.track.preview_url,artists:element.track.artists,title: element.track.name})
+                            validResponse.push({song: element.track.preview_url,artists:element.track.artists,title: element.track.name,img:element.track.images[0].url})
                         }
                     });
                     var shuffled = validResponse.sort(()=>{return .5 - Math.random()});
@@ -275,7 +281,7 @@ function launchCustomGame(user,playlist){
             let validResponse= [];
             responsePlaylist.data.tracks.items.forEach(element => {
                 if(element.track.preview_url != null){
-                    validResponse.push({song: element.track.preview_url,artists:element.track.artists,title: element.track.name})
+                    validResponse.push({song: element.track.preview_url,artists:element.track.artists,title: element.track.name,img:element.track.images[0].url})
                 }
             });
             var shuffled = validResponse.sort(()=>{return .5 - Math.random()});
