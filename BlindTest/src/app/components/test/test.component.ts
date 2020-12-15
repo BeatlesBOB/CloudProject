@@ -46,10 +46,15 @@ export class TestComponent implements OnInit {
     //   console.log(data.message);
     // })
 
-    this.blindTestService.getCategories().subscribe((data:any)=>{
-      this.genres = data.data;
+    this.blindTestService.emit("answer",{answer :"rien a voir",goodArtiste:"rien a",goodSong:"rien a voir"})
+    this.blindTestService.listen("Test").subscribe((data:any) =>{
+      console.log(data.point);
     })
-    console.log(uuidv4());
+
+    // this.blindTestService.getCategories().subscribe((data:any)=>{
+    //   this.genres = data.data;
+    // })
+    // console.log(uuidv4());
   }
   
   getImagesrc(){
