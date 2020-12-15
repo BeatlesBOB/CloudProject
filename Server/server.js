@@ -106,9 +106,9 @@ io.of("/Custom").on("connection",(socket)=>{
         }
     });
 
-    socket.on("startGame",(socket,playlist)=>{
+    socket.on("startGame",(socket,playlistId)=>{
         const user = getCurrentUser(socket.id)
-        launchCustomGame(user,playlist)
+        launchCustomGame(user,playlistId)
     })
     
     socket.on("addPoint",(socket,point)=>{
@@ -206,7 +206,7 @@ function launchGame(user){
                         }
                     });
                     var shuffled = validResponse.sort(()=>{return .5 - Math.random()});
-                    var selected=shuffled.slice(0,3);
+                    var selected=shuffled.slice(0,15);
                     sendMusique("/Genre",0,selected,user);
                 })
                 .catch(function (error) {
@@ -252,7 +252,7 @@ function launchCustomGame(user,playlist){
                 }
             });
             var shuffled = validResponse.sort(()=>{return .5 - Math.random()});
-            var selected=shuffled.slice(0,3);
+            var selected=shuffled.slice(0,15);
             sendMusique("/Genre",0,selected,user);
         })
         .catch(function (error) {
