@@ -49,6 +49,7 @@ export class TestComponent implements OnInit {
     this.blindTestService.getCategories().subscribe((data:any)=>{
       this.genres = data.data;
     })
+    console.log(uuidv4());
   }
   
   getImagesrc(){

@@ -31,9 +31,9 @@ function asAnswerArtiste(id,bool){
     const user = users.find(user => user.id==id);
     user.answeredArtiste = bool;
 }
-function addPoint(id,point){
+function addPoint(id){
     const user = users.find(user => user.id==id);
-    user.point += point;
+    user.point = user.point+1;
 }
 
 module.exports ={
