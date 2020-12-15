@@ -66,7 +66,9 @@ io.of("/Genre").on("connection",(socket)=>{
 });
 
 io.of("/Custom").on("connection",(socket)=>{
+    
     socket.emit("Bienvenue","Pret a jouer des coudes");
+    
     socket.on("disconnect",() =>{
         const user = userLeft(socket.id);
         if(user){
@@ -82,7 +84,9 @@ io.of("/Custom").on("connection",(socket)=>{
     socket.on("joinRoom", ({userName,room}) =>{
         const user = userJoin(socket.id,userName,room,0);
         socket.join(user.room);
+        
         io.of("/Custom").to(user.room).emit("newUser", user.username+" est rentré dans :"+room+" faites lui une ovation");
+        
         io.of("/Custom").to(user.room).emit("roomInfo",{
             room: user.room,
             users: getAllPlayerForRoom(user.room)
@@ -114,6 +118,7 @@ io.of("/Custom").on("connection",(socket)=>{
         var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
         socket.to(idReceiver).emit('privateMessage', {from : user.username, message : msg,time}); 
     });
+
 });
 
 server.listen(3000);
