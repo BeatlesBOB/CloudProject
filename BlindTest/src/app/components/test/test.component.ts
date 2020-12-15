@@ -19,6 +19,7 @@ export class TestComponent implements OnInit {
   public receiver;
   profileImg = ['image 1',"image 2"]
   selectedImage: String;
+  public genres = [];
 
   constructor(private blindTestService: BlindtestService) { }
 
@@ -46,7 +47,7 @@ export class TestComponent implements OnInit {
     // })
 
     this.blindTestService.getCategories().subscribe((data:any)=>{
-      console.log(data);
+      this.genres = data.data;
     })
   }
   

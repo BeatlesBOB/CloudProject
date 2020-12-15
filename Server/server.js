@@ -151,7 +151,6 @@ app.get('/genres', async function(req, res) {
             },
             method:"GET"
         })
-        console.log(catResponse);
         return res.status(200).send({
             statusCode: 200,
             data: catResponse.data.categories.items
