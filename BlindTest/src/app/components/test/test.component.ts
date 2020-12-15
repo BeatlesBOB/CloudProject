@@ -17,7 +17,7 @@ export class TestComponent implements OnInit {
   public roomInfo;
   public openPrivate = false;
   public receiver;
-  profileImg = ['image 1',"image 2"]
+  profileImg = ["image 1","image 2"]
   selectedImage: String;
   public genres = [];
 
@@ -49,8 +49,17 @@ export class TestComponent implements OnInit {
     this.blindTestService.getCategories().subscribe((data:any)=>{
       this.genres = data.data;
     })
+
+    this.answerVerification("test-abc-test", "test-abc-test");
+
   }
   
+  getImagesrc(){
+    document.querySelectorAll('.active').forEach((el) => {
+      console.log(el.children[0].getAttribute('src'));
+    });
+  }
+
   sendMessage(){
     this.blindTestService.emit("chatMessage", this.sendingMessage)
   }
@@ -58,6 +67,7 @@ export class TestComponent implements OnInit {
   sendPseudo(){
     this.blindTestService.emit("joinRoom",{userName : this.sendingPseudo,room:"party"});
   }
+  
   
   openPrivateMessage(receiver){
     this.openPrivate = true;
@@ -68,5 +78,46 @@ export class TestComponent implements OnInit {
     this.blindTestService.emit("chatMessagePrivate", {idReceiver : this.receiver.id,msg: this.sendingPrivateMessage});
   }
 
+  answerVerification(answer: string, answerOfPlayer: string)
+  {
+    let arrayAnswer:any
+    arrayAnswer = answer.replace(/\s/g, '').split('');
+    let arrayAnswerOfPlayer:any
+    arrayAnswerOfPlayer = answerOfPlayer.replace(/\s/g, '').split('');
+    let difference = this.array_diff(arrayAnswer, arrayAnswerOfPlayer);
+    if(difference === 0)
+    {
+     console.log("Bonne réponse")
+    }else if(difference <= 2)
+    {
+      console.log("presque réponse")
+    }else{
+      console.log("pas bon")
+    }
+  }
+
+  array_diff(array1 : [], array2 : [])
+  {
+    let count = 0;
+    if(array1.length >= array2.length)
+    {
+      for(let i = 0; i <= array1.length;i++)
+      {
+        if(array1[i] !== array2[i])
+        {
+          count = count+1;
+        }
+      }
+    }else{
+      for(let i = 0; i <= array2.length;i++)
+      {
+        if(array2[i] !== array1[i])
+        {
+          count = count+1;
+        }
+      }
+    }
+    return count;
+  }
 
 }
