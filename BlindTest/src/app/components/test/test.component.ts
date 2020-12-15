@@ -17,6 +17,8 @@ export class TestComponent implements OnInit {
   public roomInfo;
   public openPrivate = false;
   public receiver;
+  profileImg = ['image 1',"image 2"]
+  selectedImage: String;
 
   constructor(private blindTestService: BlindtestService) { }
 
@@ -46,8 +48,6 @@ export class TestComponent implements OnInit {
     this.blindTestService.getCategories().subscribe((data:any)=>{
       console.log(data);
     })
-
-
   }
   
   sendMessage(){

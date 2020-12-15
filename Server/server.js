@@ -1,7 +1,7 @@
 const { default: Axios } = require('axios');
-const app = require('express')();
+const express = require("express");
+const app = express();
 const server = require('http').createServer(app);
-const cors = require('cors');
 const axios = require('axios');
 const io = require('socket.io')(server, {
     cors: {
@@ -11,12 +11,11 @@ const io = require('socket.io')(server, {
 });
 const {userJoin,getCurrentUser,userLeft,getAllPlayerForRoom,addPoint} = require("./utilis/user")
 const user = require('./utilis/user');
-const { cpuUsage } = require('process');
 var CronJob = require('cron').CronJob;
+const cors = require('cors')
 app.use(cors());
-
-
-io.on('connection', socket => {
+app.use(express.json())
+    io.on('connection', socket => {
 });
 
 io.of("/Genre").on("connection",(socket)=>{
@@ -59,14 +58,14 @@ io.of("/Genre").on("connection",(socket)=>{
         const user = getCurrentUser(socket.id);
         var today = new Date();
         var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
-        io.of("/Genre").to(user.room).emit('message', {from : user.username, message : msg,time});
+        io.of("/Genre").to(user.room).emit('message', {from : user.username,fromImg:user.img, message : msg,time});
     });
 
     socket.on('chatMessagePrivate', ({idReceiver,msg}) => {
         const user = getCurrentUser(socket.id);
         var today = new Date();
         var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
-        socket.to(idReceiver).emit('privateMessage', {from : user.username, message : msg,time}); 
+        socket.to(idReceiver).emit('privateMessage', {from : user.username,fromImg:user.img, message : msg,time}); 
     });
 
 });
@@ -118,28 +117,32 @@ io.of("/Custom").on("connection",(socket)=>{
         const user = getCurrentUser(socket.id);
         var today = new Date();
         var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
-        io.of("/Custom").to(user.room).emit('message', {from : user.username, message : msg,time});
+        io.of("/Custom").to(user.room).emit('message', {from : user.username,fromImg:user.img, message : msg,time});
     });
     
     socket.on('chatMessagePrivate', ({idReceiver,msg}) => {
         const user = getCurrentUser(socket.id);
         var today = new Date();
         var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
-        socket.to(idReceiver).emit('privateMessage', {from : user.username, message : msg,time}); 
+        socket.to(idReceiver).emit('privateMessage', {from : user.username,fromImg:user.img, message : msg,time}); 
     });
 
 });
 
-app.get('/getGenre', async function(req, res) {
-    axios('https://accounts.spotify.com/api/token',{ 
-        headers: {
-            'Content-Type' : 'application/x-www-form-urlencoded',
-            'Authorization' : 'Basic MjFlNWYxZjM3ZDg2NGJiOWJiNjA3YTg3NDhjYTQyYTc6OTkxN2RiNjE4ZjhkNDZmN2IyYWQyZjAzMTI5NmQyMzM='
-        },
-        data: 'grant_type=client_credentials',
-        method:"POST"
-     })
-    .then(tokenResponse => {
+app.get('/genres', async function(req, res) {
+    let tokenResponse;
+    let catResponse;
+    try{
+        tokenResponse = await 
+        axios('https://accounts.spotify.com/api/token',{ 
+            headers: {
+                'Content-Type' : 'application/x-www-form-urlencoded',
+                'Authorization' : 'Basic MjFlNWYxZjM3ZDg2NGJiOWJiNjA3YTg3NDhjYTQyYTc6OTkxN2RiNjE4ZjhkNDZmN2IyYWQyZjAzMTI5NmQyMzM='
+            },
+            data: 'grant_type=client_credentials',
+            method:"POST"
+        });
+        catResponse = await
         axios("https://api.spotify.com/v1/browse/categories",{ 
             headers: {
                 "Accept": "application/json",
@@ -148,20 +151,18 @@ app.get('/getGenre', async function(req, res) {
             },
             method:"GET"
         })
-        .then(responseCat => {
-            return res.status(200).json({
-                statusCode: 200,
-                data: responseCat
-            });
-        })
-        .catch(function (error) {
-            console.log(error);
-        })
-    })
-    .catch(function (error) {
-        console.log(error);
-    })
-   
+        console.log(catResponse);
+        return res.status(200).send({
+            statusCode: 200,
+            data: catResponse.data.categories.items
+        });
+    }catch(error){
+        console.log(error)
+        return res.status(500).json({
+            statusCode: 500,
+            data: null
+        });
+    }   
 });
 
 server.listen(3000);

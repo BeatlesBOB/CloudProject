@@ -27,7 +27,7 @@ export class BlindtestService {
   }
 
   getCategories(){
-    return this.http.get("http://localhost:3000/gender")
+    return this.http.get("http://localhost:3000/genres")
   }
 
 }
