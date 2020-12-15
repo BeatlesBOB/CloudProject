@@ -49,9 +49,6 @@ export class TestComponent implements OnInit {
     this.blindTestService.getCategories().subscribe((data:any)=>{
       this.genres = data.data;
     })
-
-    this.answerVerification("test-abc-test", "test-abc-test");
-
   }
   
   getImagesrc(){
@@ -78,46 +75,5 @@ export class TestComponent implements OnInit {
     this.blindTestService.emit("chatMessagePrivate", {idReceiver : this.receiver.id,msg: this.sendingPrivateMessage});
   }
 
-  answerVerification(answer: string, answerOfPlayer: string)
-  {
-    let arrayAnswer:any
-    arrayAnswer = answer.replace(/\s/g, '').split('');
-    let arrayAnswerOfPlayer:any
-    arrayAnswerOfPlayer = answerOfPlayer.replace(/\s/g, '').split('');
-    let difference = this.array_diff(arrayAnswer, arrayAnswerOfPlayer);
-    if(difference === 0)
-    {
-     console.log("Bonne réponse")
-    }else if(difference <= 2)
-    {
-      console.log("presque réponse")
-    }else{
-      console.log("pas bon")
-    }
-  }
-
-  array_diff(array1 : [], array2 : [])
-  {
-    let count = 0;
-    if(array1.length >= array2.length)
-    {
-      for(let i = 0; i <= array1.length;i++)
-      {
-        if(array1[i] !== array2[i])
-        {
-          count = count+1;
-        }
-      }
-    }else{
-      for(let i = 0; i <= array2.length;i++)
-      {
-        if(array2[i] !== array1[i])
-        {
-          count = count+1;
-        }
-      }
-    }
-    return count;
-  }
 
 }
