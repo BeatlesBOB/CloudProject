@@ -89,27 +89,21 @@ io.of("/Custom").on("connection",(socket)=>{
     });
 
     socket.on("joinRoom", ({userName,room}) =>{
-        
         const user = userJoin(socket.id,userName,room,0);
         socket.join(user.room);
-        
         io.of("/Custom").to(user.room).emit("newUser", user.username+" est rentré dans :"+room+" faites lui une ovation");
-        
         io.of("/Custom").to(user.room).emit("roomInfo",{
             room: user.room,
             users: getAllPlayerForRoom(user.room)
         });
-
         if(getAllPlayerForRoom(user.room).length > 1)
         {
             io.of("/Custom").to(user.room).emit('Waiting',user.username+" attendez la prochaine musique avant de pouvoir jouer");
         }
-
         if(getAllPlayerForRoom(user.room).length === 1)
         {
             io.of("/Custom").to(user.room).emit('Admin',true);
         }
-
     });
 
     socket.on("startGame",(socket,playlist)=>{
@@ -120,7 +114,7 @@ io.of("/Custom").on("connection",(socket)=>{
     socket.on("addPoint",(socket,point)=>{
         addPoint(socket.id,point);
     })
-
+    
     socket.on('chatMessage', msg => {
         const user = getCurrentUser(socket.id);
         var today = new Date();
