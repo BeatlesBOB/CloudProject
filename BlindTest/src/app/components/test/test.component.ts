@@ -81,7 +81,6 @@ export class TestComponent implements OnInit {
   }
 
   sendPseudo(){
-    this.blindTestService.emit("joinRoom",{userName : this.sendingPseudo,room:"party"});
   }
   
   playtest(){
@@ -107,6 +106,9 @@ export class TestComponent implements OnInit {
     if(this.percent < 100) {
       this.timer = setTimeout(()=>{this.advance(duration, element)}, 100);
     }
+  }
+  joinGame(room){
+    this.blindTestService.emit("joinRoom",{userName : this.sendingPseudo,room});
   }
 
 }
