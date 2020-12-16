@@ -25,7 +25,7 @@ export class HomeComponent implements OnInit {
   }
   play(){
     if(this.pseudo != undefined || this.pseudo != ""){
-      this.router.navigate(['/genres', { pseudo: this.pseudo }]);
+      this.router.navigate(['/genres', { pseudo: this.pseudo,img:this.selectedImg }]);
     }
   }
   custom(){

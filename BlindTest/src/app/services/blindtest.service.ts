@@ -10,10 +10,10 @@ export class BlindtestService {
 
   private socket;
   constructor(private http: HttpClient) { 
-    this.socket = io("http://localhost:3000")
-
   }
-
+  connect(nameSpace){
+    this.socket = io('http://localhost:3000/'+nameSpace);
+  }
   emit(eventName : String, eventData : any){
     this.socket.emit(eventName,eventData);
   }

@@ -18,16 +18,14 @@ app.use(express.json())
 
 
 io.of("/genre").on("connection",(socket)=>{
-   
-    console.log("OUIIII");
     socket.emit("Welcome","Pret a jouer des coudes");
 
     socket.on("disconnect",() =>{
         const user = userLeft(socket.id);
         if(user){
             socket.leave(user.room);
-            io.of("/Genre").to(user.room).emit("suppUser", user.userName+"est partie de :"+user.room);
-            io.of("/Genre").to(user.room).emit("roomInfo",{
+            io.of("/genre").to(user.room).emit("suppUser", user.userName+"est partie de :"+user.room);
+            io.of("/genre").to(user.room).emit("roomInfo",{
                 room: user.room,
                 users: getAllPlayerForRoom(user.room)
             });
@@ -75,14 +73,14 @@ io.of("/genre").on("connection",(socket)=>{
     socket.on("joinRoom", ({userName,room,playerImg}) =>{
         const user = userJoin(socket.id,userName,room,0,playerImg,false);
         socket.join(user.room);
-        io.of("/Genre").to(user.room).emit("newUser", user.username+" est rentré dans :"+room+" faites lui une ovation");
-        io.of("/Genre").to(user.room).emit("roomInfo",{
+        io.of("/genre").to(user.room).emit("newUser", user.username+" est rentré dans :"+room+" faites lui une ovation");
+        io.of("/genre").to(user.room).emit("roomInfo",{
             room: user.room,
             users: getAllPlayerForRoom(user.room)
         });
         if(getAllPlayerForRoom(user.room).length > 1)
         {
-            io.of("/Genre").to(user.room).emit('Waiting',user.username+" attendez la prochaine musique avant de pouvoir jouer");
+            io.of("/genre").to(user.room).emit('Waiting',user.username+" attendez la prochaine musique avant de pouvoir jouer");
         }else{
             launchGame(user);
         }
@@ -92,7 +90,7 @@ io.of("/genre").on("connection",(socket)=>{
         const user = getCurrentUser(socket.id);
         var today = new Date();
         var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
-        io.of("/Genre").to(user.room).emit('message', {from : user.username,fromImg:user.img, message : msg,time});
+        io.of("/genre").to(user.room).emit('message', {from : user.username,fromImg:user.img, message : msg,time});
     });
 
     socket.on('chatMessagePrivate', ({idReceiver,msg}) => {
@@ -105,6 +103,7 @@ io.of("/genre").on("connection",(socket)=>{
 });
 
 io.of("/custom").on("connection",(socket)=>{
+    console.log("non plus")
     
     socket.emit("Bienvenue","Pret a jouer des coudes");
     
@@ -199,6 +198,7 @@ io.of("/custom").on("connection",(socket)=>{
 });
 
 io.on("connection",(socket) =>{
+    console.log("non monsieur");
 })
 
 app.get('/genres', async function(req, res) {
@@ -386,11 +386,15 @@ function sendMusique(of,index,playlist,user){
     var playlistJob = new CronJob('*/30 * * * * *', ()=>{
         if(index >= playlist.length-1){
             playlistJob.stop();
-            gameFinish(user,45);
-        } 
-        asAnswerArtiste(user.id,false);
-        asAnswerSong(user.id,false);
-        io.of('"'+of+'"').to(user.room).emit('playlist',playlist[index]);
+            if(getCurrentUser(user.id)!= undefined){
+                gameFinish(user,45);
+            }
+        }
+        if(getCurrentUser(user.id)!= undefined){
+            asAnswerArtiste(user.id,false);
+            asAnswerSong(user.id,false);
+            io.of(of).to(user.room).emit('playlist',playlist[index]);
+        }
         index++;
     }, null, true, 'Europe/Paris');
     playlistJob.start();  
@@ -408,21 +412,26 @@ function gameFinish(user,sec){
     startGameJob.start(); 
 }
 
-async function launchGame(user){
-    try{
-        var tokenResponse = await
-        axios('https://accounts.spotify.com/api/token',{ 
-            headers: {
+function launchGame(user){
+    axios('https://accounts.spotify.com/api/token',{ 
+        headers: {
                 'Content-Type' : 'application/x-www-form-urlencoded',
                 'Authorization' : 'Basic MjFlNWYxZjM3ZDg2NGJiOWJiNjA3YTg3NDhjYTQyYTc6OTkxN2RiNjE4ZjhkNDZmN2IyYWQyZjAzMTI5NmQyMzM='
             },
             data: 'grant_type=client_credentials',
             method:"POST"
-        }).catch(function (error) {
-            console.log(error);
+    })
+    .then(tokenResponse => {
+        axios("https://api.spotify.com/v1/browse/categories/"+user.room+"/playlists?country=FR&limit=1",{ 
+            headers: {
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+                "Authorization": "Bearer "+tokenResponse.data.access_token
+            },
+                method:"GET"
         })
-        const random = getRandomArbitrary(0,responseAllCat.data.playlists.total-1);
-        var responseAllCat = await 
+        .then(responseAllCat => {
+            const random = getRandomArbitrary(0,responseAllCat.data.playlists.total-1);
             axios("https://api.spotify.com/v1/browse/categories/"+user.room+"/playlists?country=FR&limit=1&offset="+random,{ 
                 headers: {
                     "Accept": "application/json",
@@ -430,156 +439,82 @@ async function launchGame(user){
                     "Authorization": "Bearer "+tokenResponse.data.access_token
                 },
                 method:"GET"
-            }).catch(function (error) {
+            })
+            .then(responseCat => {
+                axios(responseCat.data.playlists.items[0].href,{ 
+                    headers: {
+                        "Accept": "application/json",
+                        "Content-Type": "application/json",
+                        "Authorization": "Bearer "+tokenResponse.data.access_token
+                    },
+                    method:"GET"
+                })
+                .then(responsePlaylist => {
+                    let validResponse= [];
+                    responsePlaylist.data.tracks.items.forEach(element => {
+                        if(element.track.preview_url != null){
+                            validResponse.push({song: element.track.preview_url,artists:element.track.artists,title: element.track.name})
+                        }
+                    });
+                    var shuffled = validResponse.sort(()=>{return .5 - Math.random()});
+                    var selected=shuffled.slice(0,15);
+                    sendMusique("/genre",0,selected,user);
+                })
+                .catch(function (error) {
+                    console.log(error);
+                })
+            })
+            .catch(function (error) {
                 console.log(error);
             })
-        var responseCat = await 
-            axios(responseCat.data.playlists.items[0].href,{ 
-                headers: {
-                    "Accept": "application/json",
-                    "Content-Type": "application/json",
-                    "Authorization": "Bearer "+tokenResponse.data.access_token
-                },
-                method:"GET"
-            }).catch(function (error) {
-                console.log(error);
-            })
-
-        let validResponse= [];
-        responsePlaylist.data.tracks.items.forEach(element => {
-            if(element.track.preview_url != null){
-                validResponse.push({song: element.track.preview_url,artists:element.track.artists,title: element.track.name,img:element.track.images[0].url})
-            }
-        });
-        var shuffled = validResponse.sort(()=>{return .5 - Math.random()});
-        var selected=shuffled.slice(0,15);
-        sendMusique("/Genre",0,selected,user);
-    }catch(err){
-        console.log(err)
-    }
-    
-    //  .then(tokenResponse => {
-    //     axios("https://api.spotify.com/v1/browse/categories/"+user.room+"/playlists?country=FR&limit=1",{ 
-    //         headers: {
-    //             "Accept": "application/json",
-    //             "Content-Type": "application/json",
-    //             "Authorization": "Bearer "+tokenResponse.data.access_token
-    //         },
-    //             method:"GET"
-    //     })
-    //     .then(responseAllCat => {
-    //         const random = getRandomArbitrary(0,responseAllCat.data.playlists.total-1);
-    //         axios("https://api.spotify.com/v1/browse/categories/"+user.room+"/playlists?country=FR&limit=1&offset="+random,{ 
-    //             headers: {
-    //                 "Accept": "application/json",
-    //                 "Content-Type": "application/json",
-    //                 "Authorization": "Bearer "+tokenResponse.data.access_token
-    //             },
-    //             method:"GET"
-    //         })
-    //         .then(responseCat => {
-    //             axios(responseCat.data.playlists.items[0].href,{ 
-    //                 headers: {
-    //                     "Accept": "application/json",
-    //                     "Content-Type": "application/json",
-    //                     "Authorization": "Bearer "+tokenResponse.data.access_token
-    //                 },
-    //                 method:"GET"
-    //             })
-    //             .then(responsePlaylist => {
-    //                 
-    //             })
-    //             .catch(function (error) {
-    //                 console.log(error);
-    //             })
-    //         })
-    //         .catch(function (error) {
-    //             console.log(error);
-    //         })
-    //     })
-    //     .catch(function (error) {
-    //         console.log(error);
-    //     })
-    // })
-    // .catch(function (error) {
-    //     console.log(error);
-    // })
-}
-
-async function launchCustomGame(user,playlist){
-    try{
-        var tokenResponse = await
-        axios('https://accounts.spotify.com/api/token',{ 
-            headers: {
-                'Content-Type' : 'application/x-www-form-urlencoded',
-                'Authorization' : 'Basic MjFlNWYxZjM3ZDg2NGJiOWJiNjA3YTg3NDhjYTQyYTc6OTkxN2RiNjE4ZjhkNDZmN2IyYWQyZjAzMTI5NmQyMzM='
-            },
-            data: 'grant_type=client_credentials',
-            method:"POST"
-        }).catch(function (error) {
+        })
+        .catch(function (error) {
             console.log(error);
         })
-        var responsePlaylist = await
-            axios("https://api.spotify.com/v1/playlists/"+playlist,{ 
-                headers: {
-                    "Accept": "application/json",
-                    "Content-Type": "application/json",
-                    "Authorization": "Bearer "+tokenResponse.data.access_token
-                },
-                method:"GET"
-            }).catch(function (error) {
-                console.log(error);
-            })
+    })
+    .catch(function (error) {
+        console.log(error);
+    })
+}
 
-        let validResponse= [];
-        responsePlaylist.data.tracks.items.forEach(element => {
-            if(element.track.preview_url != null){
-                validResponse.push({song: element.track.preview_url,artists:element.track.artists,title: element.track.name,img:element.track.images[0].url})
-            }
-        });
-        var shuffled = validResponse.sort(()=>{return .5 - Math.random()});
-        var selected=shuffled.slice(0,15);
-        sendMusique("/Genre",0,selected,user);
-    }catch(err){
-        console.log(err)
-    }
-    
+function launchCustomGame(user,playlist){
 
-    // axios('https://accounts.spotify.com/api/token',{ 
-    //     headers: {
-    //         'Content-Type' : 'application/x-www-form-urlencoded',
-    //         'Authorization' : 'Basic MjFlNWYxZjM3ZDg2NGJiOWJiNjA3YTg3NDhjYTQyYTc6OTkxN2RiNjE4ZjhkNDZmN2IyYWQyZjAzMTI5NmQyMzM='
-    //     },
-    //     data: 'grant_type=client_credentials',
-    //     method:"POST"
-    //  })
-    // .then(tokenResponse => {
-    //     axios("https://api.spotify.com/v1/playlists/"+playlist,{ 
-    //         headers: {
-    //             "Accept": "application/json",
-    //             "Content-Type": "application/json",
-    //             "Authorization": "Bearer "+tokenResponse.data.access_token
-    //         },
-    //         method:"GET"
-    //     })
-    //     .then(responsePlaylist => {
-    //         let validResponse= [];
-    //         responsePlaylist.data.tracks.items.forEach(element => {
-    //             if(element.track.preview_url != null){
-    //                 validResponse.push({song: element.track.preview_url,artists:element.track.artists,title: element.track.name,img:element.track.images[0].url})
-    //             }
-    //         });
-    //         var shuffled = validResponse.sort(()=>{return .5 - Math.random()});
-    //         var selected=shuffled.slice(0,15);
-    //         sendMusique("/Genre",0,selected,user);
-    //     })
-    //     .catch(function (error) {
-    //         console.log(error);
-    //     })
-    // })
-    // .catch(function (error) {
-    //     console.log(error);
-    // })
+
+    axios('https://accounts.spotify.com/api/token',{ 
+        headers: {
+            'Content-Type' : 'application/x-www-form-urlencoded',
+            'Authorization' : 'Basic MjFlNWYxZjM3ZDg2NGJiOWJiNjA3YTg3NDhjYTQyYTc6OTkxN2RiNjE4ZjhkNDZmN2IyYWQyZjAzMTI5NmQyMzM='
+        },
+        data: 'grant_type=client_credentials',
+        method:"POST"
+     })
+    .then(tokenResponse => {
+        axios("https://api.spotify.com/v1/playlists/"+playlist,{ 
+            headers: {
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+                "Authorization": "Bearer "+tokenResponse.data.access_token
+            },
+            method:"GET"
+        })
+        .then(responsePlaylist => {
+            let validResponse= [];
+            responsePlaylist.data.tracks.items.forEach(element => {
+                if(element.track.preview_url != null){
+                    validResponse.push({song: element.track.preview_url,artists:element.track.artists,title: element.track.name})
+                }
+            });
+            var shuffled = validResponse.sort(()=>{return .5 - Math.random()});
+            var selected=shuffled.slice(0,15);
+            sendMusique("/custom",0,selected,user);
+        })
+        .catch(function (error) {
+            console.log(error);
+        })
+    })
+    .catch(function (error) {
+        console.log(error);
+    })
 }
 
 function answerVerification(answer, answerOfPlayer)

@@ -20,14 +20,21 @@ export class GameComponent implements OnInit {
   receivedPrivateMessage:any;
   gameRestartStatue:any;
   songUrl:any;
+  playerImg:any;
+  didReceivedMusique = false
 
   constructor(private router: Router,private route: ActivatedRoute,private blindTestService:BlindtestService) { }
 
   ngOnInit(): void {
+    this.blindTestService.connect('genre')
+    this.playerImg = this.route.snapshot.paramMap.get('img');
     this.pseudo = this.route.snapshot.paramMap.get('pseudo');
-    this.room = this.route.snapshot.paramMap.get('pseudo');
-    
-    this.blindTestService.emit("joinRoom",{userName:this.pseudo,room:this.room});
+    this.room = this.route.snapshot.paramMap.get('room');
+
+    this.blindTestService.listen("Welcome").subscribe((data:any) => {
+      console.log(data)
+    })
+    this.blindTestService.emit("joinRoom",{userName:this.pseudo,room:this.room,playerImg:this.playerImg});
     this.blindTestService.listen("newUser").subscribe( (data:any) =>{
       console.log("New User "+data);
     });
@@ -41,16 +48,20 @@ export class GameComponent implements OnInit {
     })
     
     this.blindTestService.listen("playlist").subscribe((data:any) =>{
+      this.didReceivedMusique = true
       this.song=data;
-      this.audio = new Audio('"'+data.song+'"');
-    })
-    
-    this.blindTestService.listen("gameRestart").subscribe((data:any) =>{
-      this.gameRestartStatue = data;
+      this.audio = new Audio(data.song);
+      this.audio.volume = 0.5
+      this.audio.play();
       this.audio.addEventListener("playing", ()=> {
         var duration = this.audio.duration;
         this.advance(duration, this.audio);
       });
+    })
+    
+    this.blindTestService.listen("gameRestart").subscribe((data:any) =>{
+      console.log(data)
+      this.gameRestartStatue = data;
     })
     
     this.blindTestService.listen("privateMessage").subscribe((data:any) =>{

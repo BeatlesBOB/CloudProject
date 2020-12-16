@@ -11,11 +11,14 @@ export class GenresComponent implements OnInit {
 
   genres = [];
   pseudo;
+  imgPlayer;
 
   constructor(private blindTestService: BlindtestService,private router: Router,private route: ActivatedRoute) { }
 
   ngOnInit(): void {
    this.pseudo = this.route.snapshot.paramMap.get('pseudo');
+   this.imgPlayer = this.route.snapshot.paramMap.get('img');
+
     this.blindTestService.getCategories().subscribe((data:any)=>{
       this.genres = data.data;
       console.log(this.genres);
@@ -23,7 +26,7 @@ export class GenresComponent implements OnInit {
   }
 
   clickOnGenre(genre){
-    this.router.navigate(['/genre/'+genre, {pseudo: this.pseudo,room:genre}]);
+    this.router.navigate(['/genre/'+genre, {pseudo: this.pseudo,room:genre,img:this.imgPlayer}]);
   }
 
 }
