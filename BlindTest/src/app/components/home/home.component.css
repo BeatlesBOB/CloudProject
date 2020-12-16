@@ -1,0 +1,102 @@
+/* bleu : 4DBED1
+rouge : FA065E
+dark : 393939 */
+
+
+  
+  .all-center {
+    height: 90vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .logo {
+    position: absolute;
+    z-index: 1;
+  }
+  
+  .txt-button {
+    color: #ffffff!important;
+    font-size: 1.5rem!important;
+    font-weight: 900!important;
+  }
+  
+  .button {
+    display: inline-block;
+    color: #212529;
+    background-color: transparent;
+    padding: 0.5rem 0.75rem 0.375rem 0.75rem;
+    text-align: center!important;
+    vertical-align: middle!important;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    letter-spacing: 1px;
+    border: 1px solid transparent;
+    border-radius: 0.25rem;
+    width: 300px;
+    height: 55px;
+    box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
+  }
+  .imgRounded{
+    border-radius: 50%;
+  }
+  .button-rounded {
+    border-radius: 3rem;
+  }
+  
+  .button-play {
+    background-color: #FA065E;
+  }
+  
+  .button-play:hover {
+    background-color: #FE3B81;
+  }
+  
+  .button-play:focus {
+    background-color: #FA065E;
+    box-shadow: inset 1px 1px 10px rgba(0, 0, 0, 0.25);
+    
+  }
+  
+  .button-create {
+    background-color: #4DBED1;
+  }
+  
+  .button-create:hover {
+    background-color: #75D5E5;
+  }
+  
+  .button-create:focus {
+    background-color: #4DBED1;
+    box-shadow: inset 1px 1px 10px rgba(0, 0, 0, 0.25);
+    
+  }
+  
+  .carousel {
+    position: relative;
+    width: 400px;
+  }
+  
+  
+  .form-input {
+    color: #393939;
+    background-color: rgb(255, 255, 255);
+    border: 1.5px solid #8B8B8B;
+    margin: 0 auto;
+    padding: 0.7rem 1.2rem;
+    border-radius: 3rem;
+    width: 300px;
+    display: block;
+    outline: none;
+  }
+  
+  .form-input:hover {
+    border: 1.5px solid #FE3B81;
+  }
+  
+  .form-input:focus {
+    outline: none;
+    box-shadow: 0px 0px 10px 4px #FA065E;
+  }

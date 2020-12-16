@@ -1,0 +1,26 @@
+.all-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card-img-overlay-custom {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    opacity: 0;
+    transition: .5s ease;
+}
+
+.card-img:hover+ .card-img-overlay-custom{
+    opacity: 1;
+}
+.card-img-overlay-custom:hover{
+    opacity: 1;
+}
+
+.card-img:hover{
+    opacity: 0.5;
+    filter: brightness(0.5) invert(1);
+}

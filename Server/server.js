@@ -17,8 +17,9 @@ app.use(cors());
 app.use(express.json())
 
 
-io.of("/genres").on("connection",(socket)=>{
+io.of("/genre").on("connection",(socket)=>{
    
+    console.log("OUIIII");
     socket.emit("Welcome","Pret a jouer des coudes");
 
     socket.on("disconnect",() =>{
@@ -214,7 +215,7 @@ app.get('/genres', async function(req, res) {
             method:"POST"
         });
         catResponse = await
-        axios("https://api.spotify.com/v1/browse/categories",{ 
+        axios("https://api.spotify.com/v1/browse/categories?country=FR",{ 
             headers: {
                 "Accept": "application/json",
                 "Content-Type": "application/json",

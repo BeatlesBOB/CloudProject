@@ -108,7 +108,7 @@ export class TestComponent implements OnInit {
     }
   }
   joinGame(room){
-    this.blindTestService.emit("joinRoom",{userName : this.sendingPseudo,room});
+    this.blindTestService.emit("joinRoom",{userName : this.sendingPseudo,room:"party"});
   }
 
 }

@@ -1,0 +1,45 @@
+<div class="container all-center">
+    <div class="row d-flex justify-content-center">      
+
+        
+        <div id="carouselExampleControls" class="carousel">
+            <div class="carousel-inner">
+                <div class="carousel-item active">
+                <img src="../../../assets/img/vador.jpg" class="d-block w-100 imgRounded" alt="...">
+              </div>
+              
+              <div class="carousel-item">
+                <img src="../../../assets/img/obi_wan.jpg" class="d-block w-100 imgRounded" alt="...">
+              </div>
+              
+              <div class="carousel-item">
+                <img src="../../../assets/img/boba.jpg" class="d-block w-100 imgRounded" alt="...">
+              </div>
+            </div>
+            <a class="carousel-control-prev" href="#carouselExampleControls" role="button"(click)="getImagesrc()"  data-bs-slide="prev">
+              <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+              <span class="visually-hidden">Previous</span>
+            </a>
+            <a class="carousel-control-next" href="#carouselExampleControls" role="button" data-bs-slide="next" (click)="getImagesrc()">
+              <span class="carousel-control-next-icon" aria-hidden="true"></span>
+              <span class="visually-hidden">Next</span>
+            </a>
+        </div>
+        
+        <!-- PSEUDO -->
+        <div class="d-flex justify-content-center pt-5">
+          <input type="text" class="form-input" id="name" placeholder="Enter your name" [(ngModel)]="pseudo" required="">
+        </div>
+        
+        <!-- JOUER -->
+        <div class="d-flex justify-content-center pt-3">
+          <a class="button button-rounded button-play txt-button text-uppercase" (click)="play()">jouer</a>
+        </div>
+        
+        <!-- CREER -->
+        <div class="d-flex justify-content-center pt-3">
+          <a class="button button-rounded button-create txt-button text-uppercase" (click)="custom()">créer une partie</a>
+        </div>
+
+    </div>
+  </div>
