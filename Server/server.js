@@ -15,8 +15,7 @@ var CronJob = require('cron').CronJob;
 const cors = require('cors')
 app.use(cors());
 app.use(express.json())
-    io.on('connection', socket => {
-});
+
 
 io.of("/genres").on("connection",(socket)=>{
    
