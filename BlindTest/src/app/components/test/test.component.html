@@ -57,6 +57,11 @@
       <span class="visually-hidden">Next</span>
     </a>
   </div> -->
+  <div class="progress">
+    <div class="progress-bar" role="progressbar" id="progress" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+  </div>
+  <button (click)="playtest()">La vache c'est fort</button>
 
-
-  
+  <div id="" style="overflow-y:scroll; height:200px;">
+    <div *ngFor="let book of bookList">{{ book }}</div>
+  </div>

@@ -235,6 +235,146 @@ app.get('/genres', async function(req, res) {
     }   
 });
 
+app.get('/artistes/:id', async function(req, res) {
+    let tokenResponse;
+    let artResponse;
+    try{
+        tokenResponse = await 
+        axios('https://accounts.spotify.com/api/token',{ 
+            headers: {
+                'Content-Type' : 'application/x-www-form-urlencoded',
+                'Authorization' : 'Basic MjFlNWYxZjM3ZDg2NGJiOWJiNjA3YTg3NDhjYTQyYTc6OTkxN2RiNjE4ZjhkNDZmN2IyYWQyZjAzMTI5NmQyMzM='
+            },
+            data: 'grant_type=client_credentials',
+            method:"POST"
+        });
+        artResponse = await
+        axios("https://api.spotify.com/v1/artists/"+req.params.id,{ 
+            headers: {
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+                "Authorization": "Bearer "+tokenResponse.data.access_token
+            },
+            method:"GET"
+        })
+        return res.status(200).send({
+            statusCode: 200,
+            data: artResponse.data
+        });
+    }catch(error){
+        console.log(error)
+        return res.status(500).json({
+            statusCode: 500,
+            data: null
+        });
+    }   
+});
+
+app.get('/album/:id', async function(req, res) {
+    let tokenResponse;
+    let albResponse;
+    try{
+        tokenResponse = await 
+        axios('https://accounts.spotify.com/api/token',{ 
+            headers: {
+                'Content-Type' : 'application/x-www-form-urlencoded',
+                'Authorization' : 'Basic MjFlNWYxZjM3ZDg2NGJiOWJiNjA3YTg3NDhjYTQyYTc6OTkxN2RiNjE4ZjhkNDZmN2IyYWQyZjAzMTI5NmQyMzM='
+            },
+            data: 'grant_type=client_credentials',
+            method:"POST"
+        });
+        albResponse = await
+        axios("https://api.spotify.com/v1/albums/"+req.params.id,{ 
+            headers: {
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+                "Authorization": "Bearer "+tokenResponse.data.access_token
+            },
+            method:"GET"
+        })
+        return res.status(200).send({
+            statusCode: 200,
+            data: albResponse.data
+        });
+    }catch(error){
+        console.log(error)
+        return res.status(500).json({
+            statusCode: 500,
+            data: null
+        });
+    }   
+});
+
+app.get('/search', async function(req, res) {
+    let tokenResponse;
+    let albResponse;
+    try{
+        tokenResponse = await 
+        axios('https://accounts.spotify.com/api/token',{ 
+            headers: {
+                'Content-Type' : 'application/x-www-form-urlencoded',
+                'Authorization' : 'Basic MjFlNWYxZjM3ZDg2NGJiOWJiNjA3YTg3NDhjYTQyYTc6OTkxN2RiNjE4ZjhkNDZmN2IyYWQyZjAzMTI5NmQyMzM='
+            },
+            data: 'grant_type=client_credentials',
+            method:"POST"
+        });
+        albResponse = await
+        axios("https://api.spotify.com/v1/search?q="+req.query.q+"&type="+req.query.type,{ 
+            headers: {
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+                "Authorization": "Bearer "+tokenResponse.data.access_token
+            },
+            method:"GET"
+        })
+        return res.status(200).send({
+            statusCode: 200,
+            data: albResponse.data
+        });
+    }catch(error){
+        console.log(error)
+        return res.status(500).json({
+            statusCode: 500,
+            data: null
+        });
+    }   
+});
+
+app.get('/tracks/:id', async function(req, res) {
+    let tokenResponse;
+    let trackResponse;
+    try{
+        tokenResponse = await 
+        axios('https://accounts.spotify.com/api/token',{ 
+            headers: {
+                'Content-Type' : 'application/x-www-form-urlencoded',
+                'Authorization' : 'Basic MjFlNWYxZjM3ZDg2NGJiOWJiNjA3YTg3NDhjYTQyYTc6OTkxN2RiNjE4ZjhkNDZmN2IyYWQyZjAzMTI5NmQyMzM='
+            },
+            data: 'grant_type=client_credentials',
+            method:"POST"
+        });
+        trackResponse = await
+        axios("https://api.spotify.com/v1/tracks/"+req.params.id,{ 
+            headers: {
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+                "Authorization": "Bearer "+tokenResponse.data.access_token
+            },
+            method:"GET"
+        })
+        return res.status(200).send({
+            statusCode: 200,
+            data: albResponse.data
+        });
+    }catch(error){
+        console.log(error)
+        return res.status(500).json({
+            statusCode: 500,
+            data: null
+        });
+    }   
+});
+
 server.listen(3000);
 
 function getRandomArbitrary(min, max) {
@@ -268,7 +408,8 @@ function gameFinish(user,sec){
 }
 
 async function launchGame(user){
-    var tokenResponse = await
+    try{
+        var tokenResponse = await
         axios('https://accounts.spotify.com/api/token',{ 
             headers: {
                 'Content-Type' : 'application/x-www-form-urlencoded',
@@ -279,39 +420,43 @@ async function launchGame(user){
         }).catch(function (error) {
             console.log(error);
         })
-    const random = getRandomArbitrary(0,responseAllCat.data.playlists.total-1);
-    var responseAllCat = await 
-        axios("https://api.spotify.com/v1/browse/categories/"+user.room+"/playlists?country=FR&limit=1&offset="+random,{ 
-            headers: {
-                "Accept": "application/json",
-                "Content-Type": "application/json",
-                "Authorization": "Bearer "+tokenResponse.data.access_token
-            },
-            method:"GET"
-        }).catch(function (error) {
-            console.log(error);
-        })
-    var responseCat = await 
-        axios(responseCat.data.playlists.items[0].href,{ 
-            headers: {
-                "Accept": "application/json",
-                "Content-Type": "application/json",
-                "Authorization": "Bearer "+tokenResponse.data.access_token
-            },
-            method:"GET"
-        }).catch(function (error) {
-            console.log(error);
-        })
+        const random = getRandomArbitrary(0,responseAllCat.data.playlists.total-1);
+        var responseAllCat = await 
+            axios("https://api.spotify.com/v1/browse/categories/"+user.room+"/playlists?country=FR&limit=1&offset="+random,{ 
+                headers: {
+                    "Accept": "application/json",
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer "+tokenResponse.data.access_token
+                },
+                method:"GET"
+            }).catch(function (error) {
+                console.log(error);
+            })
+        var responseCat = await 
+            axios(responseCat.data.playlists.items[0].href,{ 
+                headers: {
+                    "Accept": "application/json",
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer "+tokenResponse.data.access_token
+                },
+                method:"GET"
+            }).catch(function (error) {
+                console.log(error);
+            })
 
-    let validResponse= [];
-    responsePlaylist.data.tracks.items.forEach(element => {
-        if(element.track.preview_url != null){
-            validResponse.push({song: element.track.preview_url,artists:element.track.artists,title: element.track.name,img:element.track.images[0].url})
-        }
-    });
-    var shuffled = validResponse.sort(()=>{return .5 - Math.random()});
-    var selected=shuffled.slice(0,15);
-    sendMusique("/Genre",0,selected,user);
+        let validResponse= [];
+        responsePlaylist.data.tracks.items.forEach(element => {
+            if(element.track.preview_url != null){
+                validResponse.push({song: element.track.preview_url,artists:element.track.artists,title: element.track.name,img:element.track.images[0].url})
+            }
+        });
+        var shuffled = validResponse.sort(()=>{return .5 - Math.random()});
+        var selected=shuffled.slice(0,15);
+        sendMusique("/Genre",0,selected,user);
+    }catch(err){
+        console.log(err)
+    }
+    
     //  .then(tokenResponse => {
     //     axios("https://api.spotify.com/v1/browse/categories/"+user.room+"/playlists?country=FR&limit=1",{ 
     //         headers: {
@@ -361,8 +506,8 @@ async function launchGame(user){
 }
 
 async function launchCustomGame(user,playlist){
-    
-    var tokenResponse = await
+    try{
+        var tokenResponse = await
         axios('https://accounts.spotify.com/api/token',{ 
             headers: {
                 'Content-Type' : 'application/x-www-form-urlencoded',
@@ -373,28 +518,31 @@ async function launchCustomGame(user,playlist){
         }).catch(function (error) {
             console.log(error);
         })
-    
-    var responsePlaylist = await
-        axios("https://api.spotify.com/v1/playlists/"+playlist,{ 
-            headers: {
-                "Accept": "application/json",
-                "Content-Type": "application/json",
-                "Authorization": "Bearer "+tokenResponse.data.access_token
-            },
-            method:"GET"
-        }).catch(function (error) {
-            console.log(error);
-        })
+        var responsePlaylist = await
+            axios("https://api.spotify.com/v1/playlists/"+playlist,{ 
+                headers: {
+                    "Accept": "application/json",
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer "+tokenResponse.data.access_token
+                },
+                method:"GET"
+            }).catch(function (error) {
+                console.log(error);
+            })
 
-    let validResponse= [];
-    responsePlaylist.data.tracks.items.forEach(element => {
-        if(element.track.preview_url != null){
-            validResponse.push({song: element.track.preview_url,artists:element.track.artists,title: element.track.name,img:element.track.images[0].url})
-        }
-    });
-    var shuffled = validResponse.sort(()=>{return .5 - Math.random()});
-    var selected=shuffled.slice(0,15);
-    sendMusique("/Genre",0,selected,user);
+        let validResponse= [];
+        responsePlaylist.data.tracks.items.forEach(element => {
+            if(element.track.preview_url != null){
+                validResponse.push({song: element.track.preview_url,artists:element.track.artists,title: element.track.name,img:element.track.images[0].url})
+            }
+        });
+        var shuffled = validResponse.sort(()=>{return .5 - Math.random()});
+        var selected=shuffled.slice(0,15);
+        sendMusique("/Genre",0,selected,user);
+    }catch(err){
+        console.log(err)
+    }
+    
 
     // axios('https://accounts.spotify.com/api/token',{ 
     //     headers: {

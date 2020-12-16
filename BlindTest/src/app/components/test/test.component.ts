@@ -20,7 +20,10 @@ export class TestComponent implements OnInit {
   profileImg = ["image 1","image 2"]
   selectedImage: String;
   public genres = [];
-
+  audio:any
+  percent = 0;
+  timer:any
+  bookList = ["oui","non","oui","non","oui","non","oui","non","oui","non","oui","non","oui","non","oui","non","oui","non","oui","non","oui","non"]
   constructor(private blindTestService: BlindtestService) { }
 
   ngOnInit(): void {
@@ -55,8 +58,18 @@ export class TestComponent implements OnInit {
     //   this.genres = data.data;
     // })
     // console.log(uuidv4());
+    
+    // this.blindTestService.search("tania%20bowra","artist").subscribe((data:any)=>{
+    //   console.log(data)
+    // })
+    this.audio = new Audio('https://p.scdn.co/mp3-preview/4839b070015ab7d6de9fec1756e1f3096d908fba?cid=774b29d4f13844c495f206cafdad9c86');
+    this.audio.addEventListener("playing", ()=> {
+      var duration = this.audio.duration;
+      this.advance(duration, this.audio);
+    });
+
   }
-  
+
   getImagesrc(){
     document.querySelectorAll('.active').forEach((el) => {
       console.log(el.children[0].getAttribute('src'));
@@ -71,6 +84,9 @@ export class TestComponent implements OnInit {
     this.blindTestService.emit("joinRoom",{userName : this.sendingPseudo,room:"party"});
   }
   
+  playtest(){
+    this.audio.play();
+  }
   
   openPrivateMessage(receiver){
     this.openPrivate = true;
@@ -81,5 +97,16 @@ export class TestComponent implements OnInit {
     this.blindTestService.emit("chatMessagePrivate", {idReceiver : this.receiver.id,msg: this.sendingPrivateMessage});
   }
 
+  advance(duration, element){
+    var progress = document.getElementById("progress");
+    this.percent = Math.floor(element.currentTime * 100/30);
+    progress.style.width = this.percent +'%'
+    this.startTimer(duration, element);
+  }
+  startTimer(duration, element){ 
+    if(this.percent < 100) {
+      this.timer = setTimeout(()=>{this.advance(duration, element)}, 100);
+    }
+  }
 
 }

@@ -29,5 +29,12 @@ export class BlindtestService {
   getCategories(){
     return this.http.get("http://localhost:3000/genres")
   }
+  getSpecArtistes(id){
+    return this.http.get("http://localhost:3000/artistes/"+id)
+  }
+
+  search(q,type){
+    return this.http.get("http://localhost:3000/search?q="+q+"&type="+type)
+  }
 
 }
