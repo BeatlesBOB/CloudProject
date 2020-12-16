@@ -18,9 +18,9 @@ app.use(express.json())
     io.on('connection', socket => {
 });
 
-io.of("/Genre").on("connection",(socket)=>{
-    
-    socket.emit("Bienvenue","Pret a jouer des coudes");
+io.of("/genres").on("connection",(socket)=>{
+   
+    socket.emit("Welcome","Pret a jouer des coudes");
 
     socket.on("disconnect",() =>{
         const user = userLeft(socket.id);
@@ -104,7 +104,7 @@ io.of("/Genre").on("connection",(socket)=>{
 
 });
 
-io.of("/Custom").on("connection",(socket)=>{
+io.of("/custom").on("connection",(socket)=>{
     
     socket.emit("Bienvenue","Pret a jouer des coudes");
     
@@ -172,7 +172,7 @@ io.of("/Custom").on("connection",(socket)=>{
         }
         if(getAllPlayerForRoom(user.room).length === 1)
         {
-            io.of("/Custom").to(user.room).emit('Admin',true);
+            io.of("/Custom").to(user.room).emit('admin',true);
         }
     });
 
@@ -199,45 +199,6 @@ io.of("/Custom").on("connection",(socket)=>{
 });
 
 io.on("connection",(socket) =>{
-    userJoin(socket.id,"userName","room",0,"playerImg");
-    
-    socket.on("answer",({answer,goodArtiste,goodSong}) =>{
-        var DiffArtiste = answerVerification(goodArtiste,answer);
-        var DiffSong = answerVerification(goodSong,answer);
-        var currentUser = getCurrentUser(socket.id);
-        if(!currentUser.answeredArtiste || !currentUser.answeredSong){
-            if(!currentUser.answeredArtiste && DiffArtiste){
-                io.to(socket.id).emit("resultAnswer", "vous avez trouver l'artiste");
-                io.of("/Custom").to(user.room).emit("roomInfo",{
-                    room: user.room,
-                    users: getAllPlayerForRoom(user.room)
-                });
-                asAnswerArtiste(socket.id,true);
-                addPoint(socket.id);
-            }else{
-                io.to(socket.id).emit("resultAnswer", "pas bon ou déja répondue");
-            }
-            
-            if(!currentUser.answeredSong && DiffSong){
-                io.to(socket.id).emit("resultAnswer", "vous avez trouver la chanson");
-                io.of("/Custom").to(user.room).emit("roomInfo",{
-                    room: user.room,
-                    users: getAllPlayerForRoom(user.room)
-                });
-                asAnswerSong(socket.id,true);
-                addPoint(socket.id);
-            }else{
-                io.to(socket.id).emit("resultAnswer", "pas bon ou déja répondue");
-            }
-
-            if(!currentUser.answeredSong && DiffSong === null){
-                io.to(socket.id).emit("resultAnswer", "vous avez presque la chanson");
-            }
-            if(!currentUser.answeredSong && DiffArtiste === null){
-                io.to(socket.id).emit("resultAnswer", "vous avez presque l'artiste");
-            }
-        }
-    })
 })
 
 app.get('/genres', async function(req, res) {
@@ -307,81 +268,114 @@ function gameFinish(user,sec){
     startGameJob.start(); 
 }
 
-function launchGame(user){
-    axios('https://accounts.spotify.com/api/token',{ 
-        headers: {
-            'Content-Type' : 'application/x-www-form-urlencoded',
-            'Authorization' : 'Basic MjFlNWYxZjM3ZDg2NGJiOWJiNjA3YTg3NDhjYTQyYTc6OTkxN2RiNjE4ZjhkNDZmN2IyYWQyZjAzMTI5NmQyMzM='
-        },
-        data: 'grant_type=client_credentials',
-        method:"POST"
-     })
-    .then(tokenResponse => {
-        axios("https://api.spotify.com/v1/browse/categories/"+user.room+"/playlists?country=FR&limit=1",{ 
+async function launchGame(user){
+    var tokenResponse = await
+        axios('https://accounts.spotify.com/api/token',{ 
+            headers: {
+                'Content-Type' : 'application/x-www-form-urlencoded',
+                'Authorization' : 'Basic MjFlNWYxZjM3ZDg2NGJiOWJiNjA3YTg3NDhjYTQyYTc6OTkxN2RiNjE4ZjhkNDZmN2IyYWQyZjAzMTI5NmQyMzM='
+            },
+            data: 'grant_type=client_credentials',
+            method:"POST"
+        }).catch(function (error) {
+            console.log(error);
+        })
+    const random = getRandomArbitrary(0,responseAllCat.data.playlists.total-1);
+    var responseAllCat = await 
+        axios("https://api.spotify.com/v1/browse/categories/"+user.room+"/playlists?country=FR&limit=1&offset="+random,{ 
             headers: {
                 "Accept": "application/json",
                 "Content-Type": "application/json",
                 "Authorization": "Bearer "+tokenResponse.data.access_token
             },
-                method:"GET"
-        })
-        .then(responseAllCat => {
-            const random = getRandomArbitrary(0,responseAllCat.data.playlists.total-1);
-            axios("https://api.spotify.com/v1/browse/categories/"+user.room+"/playlists?country=FR&limit=1&offset="+random,{ 
-                headers: {
-                    "Accept": "application/json",
-                    "Content-Type": "application/json",
-                    "Authorization": "Bearer "+tokenResponse.data.access_token
-                },
-                method:"GET"
-            })
-            .then(responseCat => {
-                axios(responseCat.data.playlists.items[0].href,{ 
-                    headers: {
-                        "Accept": "application/json",
-                        "Content-Type": "application/json",
-                        "Authorization": "Bearer "+tokenResponse.data.access_token
-                    },
-                    method:"GET"
-                })
-                .then(responsePlaylist => {
-                    let validResponse= [];
-                    responsePlaylist.data.tracks.items.forEach(element => {
-                        if(element.track.preview_url != null){
-                            validResponse.push({song: element.track.preview_url,artists:element.track.artists,title: element.track.name,img:element.track.images[0].url})
-                        }
-                    });
-                    var shuffled = validResponse.sort(()=>{return .5 - Math.random()});
-                    var selected=shuffled.slice(0,15);
-                    sendMusique("/Genre",0,selected,user);
-                })
-                .catch(function (error) {
-                    console.log(error);
-                })
-            })
-            .catch(function (error) {
-                console.log(error);
-            })
-        })
-        .catch(function (error) {
+            method:"GET"
+        }).catch(function (error) {
             console.log(error);
         })
-    })
-    .catch(function (error) {
-        console.log(error);
-    })
+    var responseCat = await 
+        axios(responseCat.data.playlists.items[0].href,{ 
+            headers: {
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+                "Authorization": "Bearer "+tokenResponse.data.access_token
+            },
+            method:"GET"
+        }).catch(function (error) {
+            console.log(error);
+        })
+
+    let validResponse= [];
+    responsePlaylist.data.tracks.items.forEach(element => {
+        if(element.track.preview_url != null){
+            validResponse.push({song: element.track.preview_url,artists:element.track.artists,title: element.track.name,img:element.track.images[0].url})
+        }
+    });
+    var shuffled = validResponse.sort(()=>{return .5 - Math.random()});
+    var selected=shuffled.slice(0,15);
+    sendMusique("/Genre",0,selected,user);
+    //  .then(tokenResponse => {
+    //     axios("https://api.spotify.com/v1/browse/categories/"+user.room+"/playlists?country=FR&limit=1",{ 
+    //         headers: {
+    //             "Accept": "application/json",
+    //             "Content-Type": "application/json",
+    //             "Authorization": "Bearer "+tokenResponse.data.access_token
+    //         },
+    //             method:"GET"
+    //     })
+    //     .then(responseAllCat => {
+    //         const random = getRandomArbitrary(0,responseAllCat.data.playlists.total-1);
+    //         axios("https://api.spotify.com/v1/browse/categories/"+user.room+"/playlists?country=FR&limit=1&offset="+random,{ 
+    //             headers: {
+    //                 "Accept": "application/json",
+    //                 "Content-Type": "application/json",
+    //                 "Authorization": "Bearer "+tokenResponse.data.access_token
+    //             },
+    //             method:"GET"
+    //         })
+    //         .then(responseCat => {
+    //             axios(responseCat.data.playlists.items[0].href,{ 
+    //                 headers: {
+    //                     "Accept": "application/json",
+    //                     "Content-Type": "application/json",
+    //                     "Authorization": "Bearer "+tokenResponse.data.access_token
+    //                 },
+    //                 method:"GET"
+    //             })
+    //             .then(responsePlaylist => {
+    //                 
+    //             })
+    //             .catch(function (error) {
+    //                 console.log(error);
+    //             })
+    //         })
+    //         .catch(function (error) {
+    //             console.log(error);
+    //         })
+    //     })
+    //     .catch(function (error) {
+    //         console.log(error);
+    //     })
+    // })
+    // .catch(function (error) {
+    //     console.log(error);
+    // })
 }
 
-function launchCustomGame(user,playlist){
-    axios('https://accounts.spotify.com/api/token',{ 
-        headers: {
-            'Content-Type' : 'application/x-www-form-urlencoded',
-            'Authorization' : 'Basic MjFlNWYxZjM3ZDg2NGJiOWJiNjA3YTg3NDhjYTQyYTc6OTkxN2RiNjE4ZjhkNDZmN2IyYWQyZjAzMTI5NmQyMzM='
-        },
-        data: 'grant_type=client_credentials',
-        method:"POST"
-     })
-    .then(tokenResponse => {
+async function launchCustomGame(user,playlist){
+    
+    var tokenResponse = await
+        axios('https://accounts.spotify.com/api/token',{ 
+            headers: {
+                'Content-Type' : 'application/x-www-form-urlencoded',
+                'Authorization' : 'Basic MjFlNWYxZjM3ZDg2NGJiOWJiNjA3YTg3NDhjYTQyYTc6OTkxN2RiNjE4ZjhkNDZmN2IyYWQyZjAzMTI5NmQyMzM='
+            },
+            data: 'grant_type=client_credentials',
+            method:"POST"
+        }).catch(function (error) {
+            console.log(error);
+        })
+    
+    var responsePlaylist = await
         axios("https://api.spotify.com/v1/playlists/"+playlist,{ 
             headers: {
                 "Accept": "application/json",
@@ -389,25 +383,55 @@ function launchCustomGame(user,playlist){
                 "Authorization": "Bearer "+tokenResponse.data.access_token
             },
             method:"GET"
-        })
-        .then(responsePlaylist => {
-            let validResponse= [];
-            responsePlaylist.data.tracks.items.forEach(element => {
-                if(element.track.preview_url != null){
-                    validResponse.push({song: element.track.preview_url,artists:element.track.artists,title: element.track.name,img:element.track.images[0].url})
-                }
-            });
-            var shuffled = validResponse.sort(()=>{return .5 - Math.random()});
-            var selected=shuffled.slice(0,15);
-            sendMusique("/Genre",0,selected,user);
-        })
-        .catch(function (error) {
+        }).catch(function (error) {
             console.log(error);
         })
-    })
-    .catch(function (error) {
-        console.log(error);
-    })
+
+    let validResponse= [];
+    responsePlaylist.data.tracks.items.forEach(element => {
+        if(element.track.preview_url != null){
+            validResponse.push({song: element.track.preview_url,artists:element.track.artists,title: element.track.name,img:element.track.images[0].url})
+        }
+    });
+    var shuffled = validResponse.sort(()=>{return .5 - Math.random()});
+    var selected=shuffled.slice(0,15);
+    sendMusique("/Genre",0,selected,user);
+
+    // axios('https://accounts.spotify.com/api/token',{ 
+    //     headers: {
+    //         'Content-Type' : 'application/x-www-form-urlencoded',
+    //         'Authorization' : 'Basic MjFlNWYxZjM3ZDg2NGJiOWJiNjA3YTg3NDhjYTQyYTc6OTkxN2RiNjE4ZjhkNDZmN2IyYWQyZjAzMTI5NmQyMzM='
+    //     },
+    //     data: 'grant_type=client_credentials',
+    //     method:"POST"
+    //  })
+    // .then(tokenResponse => {
+    //     axios("https://api.spotify.com/v1/playlists/"+playlist,{ 
+    //         headers: {
+    //             "Accept": "application/json",
+    //             "Content-Type": "application/json",
+    //             "Authorization": "Bearer "+tokenResponse.data.access_token
+    //         },
+    //         method:"GET"
+    //     })
+    //     .then(responsePlaylist => {
+    //         let validResponse= [];
+    //         responsePlaylist.data.tracks.items.forEach(element => {
+    //             if(element.track.preview_url != null){
+    //                 validResponse.push({song: element.track.preview_url,artists:element.track.artists,title: element.track.name,img:element.track.images[0].url})
+    //             }
+    //         });
+    //         var shuffled = validResponse.sort(()=>{return .5 - Math.random()});
+    //         var selected=shuffled.slice(0,15);
+    //         sendMusique("/Genre",0,selected,user);
+    //     })
+    //     .catch(function (error) {
+    //         console.log(error);
+    //     })
+    // })
+    // .catch(function (error) {
+    //     console.log(error);
+    // })
 }
 
 function answerVerification(answer, answerOfPlayer)
