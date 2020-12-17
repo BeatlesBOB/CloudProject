@@ -8,6 +8,7 @@ import { FormsModule } from '@angular/forms';
 import { HomeComponent } from './components/home/home.component';
 import { GenresComponent } from './components/genres/genres.component';
 import { GameComponent } from './components/game/game.component';
+import { ClassementPipe } from './pipes/classement.pipe';
 
 @NgModule({
   declarations: [
@@ -15,7 +16,8 @@ import { GameComponent } from './components/game/game.component';
     TestComponent,
     HomeComponent,
     GenresComponent,
-    GameComponent
+    GameComponent,
+    ClassementPipe
   ],
   imports: [
     BrowserModule,

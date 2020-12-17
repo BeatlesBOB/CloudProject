@@ -1,1 +1,192 @@
-<p>{{didReceivedMusique}}</p>
+<div class="container all-center">
+    <div class="row d-flex justify-content-center">
+      <!-- LIEN PARTIE -->
+      <div class="col-12 d-flex justify-content-center px-0 mx-0">
+        <input type="text" class="form-input-3" placeholder="LIEN À COPIER VERS PARTIE" value="{{url}}">
+      </div>
+      <!-- LIEN SPOTIFY -->
+      <div *ngIf="isAdmin"class="col-12 d-flex justify-content-center pt-3 px-0 mx-0">
+        <input type="text" class="form-input-3" placeholder="LIEN PLAYLIST SPOTIFY">
+      </div>
+      <!-- REPONSE -->
+      <div class="col-12 px-0 mx-0">
+        <div class="progress mt-5">
+          <div class="progress-bar bg-progress" role="progressbar" id="progress" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+      </div>
+      <div class="col-11 px-0 mx-0">
+        <input type="text" class="form-input-4" [(ngModel)]="reponsePlayer" (keyup.enter)="sendReponse()" placeholder="NOM DE L'ARTISTE OU DE LA MUSIQUE">
+      </div>
+      <div class="col-1 px-0 mx-0">
+        <button (click)="sendReponse()" id="" class="ok-btn">
+          OK
+        </button>
+      </div>
+      <div class="col-12">
+        <span *ngIf="isSongFound"class="badgeCustom bg-success w-50 mr-2">Vous avez trouvé la chanson</span>
+        <span *ngIf="isArtistFound"class="badgeCustom bg-success w-50">Vous avez trouvé l'artiste</span>
+      </div>
+      <!-- HISTORY & CHAT -->
+      <div class="row d-flex justify-content-center pt-3 px-0 mx-0">
+        <!-- MUSIC HISTORY -->
+        <div class="col-6 d-flex justify-content-center px-1 mx-0">
+          <div class="history-card d-flex justify-content-center">
+            <div class="card">
+              <div class="card-header ">
+                <div class="d-flex align-items-center">
+                  <h3 class="title--card my-0">HISTORIQUE DES MUSIQUES</h3>
+                </div>
+              </div>
+              <div id="" class="card-body txt_card_body">
+                <div *ngFor="let music of musicsPlayed.reverse()"class="d-flex align-items-center mb-3 ms-3">
+                  <img src="{{music.img}}" class="music_img">
+                  <div style="margin-left: 0.5rem;">
+                    <p class="m-0 p-0 music_name">{{music.title}}</p>
+                    <p class="m-0 p-0 artist_name">{{music.artists[0].name}}</p>
+                  </div>
+                </div>>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- CHAT -->
+        <div class="col-6 d-flex justify-content-center px-1 mx-0">
+          <div class="chat-card d-flex justify-content-center">
+            <div class="card">
+              <div class="card-header ">
+                <div class="d-flex align-items-center">
+                  <h3 class="title--card my-0">CHAT</h3>
+                </div>
+              </div>
+              <div id="" class="card-body txt_card_body">
+                
+                <div *ngFor="let message of receivedPublicMessage">
+                    <div *ngIf="socketId === message.from.id; else elseBlock">
+                        <div class="d-flex justify-content-end mb_msg">
+                            <div class="msg_cotainer_send">{{message.message}}</div>                  
+                            <img src="{{message.fromImg}}" class="rounded-circle user_img_msg">
+                        </div>
+                    </div>
+                    <ng-template #elseBlock>
+                        <p class="msg_pseudo">{{message.from.username}}</p>
+                        <div class="d-flex justify-content-start mb_msg">
+                          <img src="{{message.fromImg}}" class="rounded-circle user_img_msg">
+                          <div class="msg_cotainer">{{message.message}}</div>
+                        </div>
+                    </ng-template>
+                </div>
+                
+              </div>
+              <div class="card-footer mb-1">
+                <form action="" method="get" class="input-group">
+                  <input id="text_msg" name="text_msg" class="form-control type_msg" (keyup.enter)="sendPublicMessage()"placeholder="Ecris ton message..."[(ngModel)]="publicMessage">
+                  <div class="input-group-append">
+                    <button  class="input-group-text send_btn"(click)="sendPublicMessage()"><i class="fas fa-location-arrow"></i></button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div> 
+        <!-- CLASSEMENT -->
+        <div class="col-12 d-flex justify-content-center pt-3 px-0 mx-0">
+          <div class="top-card d-flex justify-content-center">
+            <div class="card">
+              <div class="card-header ">
+                <div class="d-flex align-items-center">
+                  <h3 class="title--card my-0">CLASSEMENT</h3>
+                </div>
+              </div>
+              <div id="affichage" class="card-body txt_card_body px-0">
+                <div class="row mx-0 px-3" *ngIf="roomInfo">
+                    <div *ngFor="let player of roomInfo.users" class="col-3 d-flex align-items-center px-3 mx-0 mb-3">
+                      <div *ngIf="socketId === player.id; else elseBlockClassement">
+                        <img src="{{player.img}}" class="rounded-circle user_img_top">
+                        <p class="m-0 p-0 user_name text-yellow"><strong>{{player.username}}</strong> : {{player.point}}</p>
+                      </div>
+                      <ng-template #elseBlockClassement>
+                        <div>
+                          <img src="{{player.img}}" class="rounded-circle user_img_top">
+                          <p class="m-0 p-0 user_name"><strong>{{player.username}}</strong> : {{player.point}}</p>
+                        </div>
+                      </ng-template>
+                    </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOADER -->
+<div *ngIf="!asReceivedMusique"class="modal--content ">
+  <div class="pic">
+    <div class="mb-5">
+      <h2 class="title--modal">En attente de la partie...</h2>
+      <div class="d-flex justify-content-center align-items-center">
+        <p class="txt--modal">Veuillez patienter quelques instants</p>
+        <div class="spinner-border spinner-border-sm" role="status">
+          <span class="sr-only">Loading </span>
+        </div>
+      </div>
+    </div>
+    <div class="d-flex justify-content-center">
+      <img src="../../../assets/img/waiting.svg">
+    </div>
+  </div>
+</div>
+
+
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content p-2">
+      <div class="d-flex justify-content-center px-0 mx-0">      
+        <div class="score-card d-flex justify-content-center">
+          <div class="card">
+            <div class="d-flex justify-content-end"><span class="close">&times;</span></div>          
+            <div id="affichage" class="card-body txt_card_body px-0 py-3 color-dark">
+              <h3 class="title--card my-0">FIN DE LA PARTIE</h3>
+              <h4 class="score--card my-0 mt-1"><strong>Mon score</strong> : 69 pts</h4>
+              <h3 class="title--card my-0 mt-5">CLASSEMENT FINAL :</h3>
+              <div class="row mx-0 px-3 mt-3">              
+                <div class="col-4 d-flex align-items-center px-3 mx-0 mb-3">
+                  <div class="nb_score">1.</div>
+                  <img src="images/obi_wan.jpg" class="rounded-circle user_img_score">
+                  <div style="margin-left: 0.5rem;">
+                    <p class="m-0 p-0 user_name_score"><strong>Obi-wan Ademo</strong> : 69 pts</p>
+                  </div>
+                </div>
+  
+                <div class="col-4 d-flex align-items-center px-3 mx-0 mb-3">
+                  <div class="nb_score">2.</div>
+                  <img src="images/pnl.png" class="rounded-circle user_img_score">
+                  <div style="margin-left: 0.5rem;">
+                    <p class="m-0 p-0 user_name_score"><strong>Alderiate</strong> : 53 pts</p>
+                  </div>
+                </div>
+  
+                <div class="col-4 d-flex align-items-center px-3 mx-0 mb-3">
+                  <div class="nb_score">3.</div>
+                  <img src="images/boba.jpg" class="rounded-circle user_img_score">
+                  <div style="margin-left: 0.5rem;">
+                    <p class="m-0 p-0 user_name_score"><strong>joueur nul</strong> : 13 pts</p>
+                  </div>
+                </div>
+              </div>
+              <div class="text-center mt-5">
+                <p class="score-wait">En attente de la prochaine partie...</p>
+                <div class="spinner-border" role="status">
+                  <span class="sr-only">Loading...</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>          
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,236 @@
+/*---FORMS GAME PAGE---*/
+.bg-progress {
+    background-color: #dc3545!important;
+}
+
+.form-input-3 {
+    color: #393939;
+    background-color: rgb(255, 255, 255);
+    border: 1.5px solid #ffffff;
+    margin: 0 auto;
+    padding: 0.7rem 1.2rem;
+    border-radius: 15px;
+    width: 100%;
+    display: block;
+    outline: none;
+    font-weight: 900;
+    text-transform: uppercase;
+  }
+  .form-input-3:hover {
+    border: 1.5px solid #FE3B81;
+  }
+  .form-input-3:focus {
+    outline: none;
+    border: 1.5px solid #FA065E;
+  }
+  .form-input-4 {
+    color: #393939;
+    background-color: rgb(255, 255, 255);
+    border: 1.5px solid #ffffff;
+    margin: 0 auto;
+    padding: 0.7rem 1.2rem;
+    border-radius: 0 0  0 15px;
+    width: 100%;
+    display: block;
+    outline: none;
+    font-weight: 900;
+    text-transform: uppercase;
+  }
+  .form-input-4:hover {
+    border: 1.5px solid #FE3B81;
+  }
+  .form-input-4:focus {
+    outline: none;
+    border: 1.5px solid #FA065E;
+  }
+  .ok-btn{
+    width: 100%;
+    border-radius: 0 0 15px 0 !important;
+    height:100%!important;
+    background-color:#4DBED1 !important;
+    color: #ffffff!important;
+    border:0 !important;
+    cursor: pointer;
+    font-weight: 900;
+    font-size: 1.5rem;
+  }
+  
+  
+  /*---CARDS GAME PAGE---*/
+  .card{
+    width: 100%!important;
+    border: none;
+    border-radius: 15px !important;
+    background-color: white !important;
+  }
+  .card-header{
+    /* border: none; */
+    border-radius:  15px 15px 0 0 !important;
+    background-color: white !important;
+  }
+  .card-footer{
+    border: none;
+    border-radius: 0 0  15px 15px !important;
+    background-color: white !important;
+  }
+  .container{
+    align-content: center;
+  }
+  .title--card {
+    font-weight: 900;
+    color: #393939;
+  }
+  .txt_card_body{
+    overflow-y: auto;
+    padding: 1rem 1rem 0 1rem;
+  }
+  
+  /*---MUSIC HISTORY GAME PAGE---*/
+  
+  .history-card{
+    max-height: 350px;
+    width: 100%!important;
+  }
+  .music_img{
+    height: 75px;
+    width: 75px;
+    /* border:3px solid #FA065E;
+    border-radius: 5px; */
+  }
+  .music_name {
+    font-size: 24px;
+    font-weight: 500;
+    color: #393939;
+  }
+  .artist_name {
+    font-size: 14px;
+    font-weight: 300;
+    color:#8B8B8B;
+  }
+  
+  /*---CHAT GAME PAGE---*/
+  
+  .chat-card{
+    max-height: 350px;
+    width: 100%!important;
+  }
+  .mb_msg{
+    margin-bottom: 20px;
+  }
+  .mb_msg_suite{
+    margin-bottom: 5px;
+  }
+  .msg_cotainer{
+    max-width: 55%;
+    margin-top: auto;
+    margin-bottom: auto;
+    margin-left: 10px;
+    border-radius: 15px;
+    color: #ffffff;
+    background-color: #BDBDBD;
+    padding: 10px;
+    position: relative;
+  }
+  .msg_cotainer_send{
+    max-width: 55%;
+    margin-top: auto;
+    margin-bottom: auto;
+    margin-right: 10px;
+    border-radius: 15px;
+    background-color: #FA065E;
+    color: #ffffff;
+    padding: 10px;
+    position: relative;
+  }
+  .user_img_msg{
+    height: 40px;
+    width: 40px;
+  }
+  .msg_pseudo{
+    margin-left: 60px;
+    margin-bottom: 0;
+    color: #393939;
+    font-size: 0.75rem;
+    font-weight: 300;
+  }
+  .type_msg{
+    /* background-color: rgba(0,0,0,0.4) !important; */
+    border: solid 1px #8B8B8B !important;
+    border-radius: 15px 0 0 15px !important;
+    color:#393939 !important;
+    height: 50px !important;
+    overflow-y: auto;
+  }
+  .type_msg:focus{
+    box-shadow:none !important;
+    outline:0px !important;
+  }
+  .type_msg::placeholder{
+    color: #8B8B8B;
+  }
+  .send_btn{
+    border-radius: 0 15px 15px 0 !important;
+    height: 50px!important;
+    background-color:#4DBED1 !important;
+    border:0 !important;
+    cursor: pointer;
+  }
+  .send_btn i{
+    color: #ffffff;
+  }
+  
+  /*---TOP GAME PAGE---*/
+  
+  .top-card{
+    max-height: 250px;
+    width: 100%!important;
+  }
+  .user_name{
+    font-size: 12px;
+    font-weight: 400;
+    color: #393939;
+  }
+  .user_img_top{
+    height: 50px;
+    width: 50px;
+  }
+
+  .badgeCustom{
+    padding: .35em .65em;
+    font-size: .75em;
+    font-weight: 700;
+    color: #fff;
+    text-align: center;
+  }
+  .text-yellow{
+    color: #FFAC00;
+  }
+
+
+
+.modal--content{
+  top: 0;
+  position: absolute;
+  z-index: 999;
+  padding-top: 8%;
+  background-color: #393939;
+  height: 100vh;
+  width: 100vw;
+}
+.color-dark {
+  color: #393939;
+}
+.title--modal {
+  font-size: 3rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  text-align: center;
+}
+.txt--modal {
+  font-size: 1rem;
+  font-weight: 400;
+  font-style: italic;
+  text-align: center;
+  padding-right: 10px;
+  margin: 0!important;
+}

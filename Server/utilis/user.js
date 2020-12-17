@@ -21,7 +21,9 @@ function getCurrentUser(id){
 function getAllPlayerForRoom(room){
     return users.filter(user => user.room === room)
 }
-
+function resetAllPlayerForRoom(room){
+    
+}
 function asAnswerSong(id,bool){
     const user = users.find(user => user.id==id);
     user.answeredSong = bool;
@@ -35,6 +37,10 @@ function addPoint(id){
     const user = users.find(user => user.id==id);
     user.point = user.point+1;
 }
+function resetPoint(id){
+    const user = users.find(user => user.id==id);
+    user.point = 0;
+}
 
 module.exports ={
     userJoin,
@@ -43,5 +49,6 @@ module.exports ={
     userLeft,
     addPoint,
     asAnswerSong,
-    asAnswerArtiste
+    asAnswerArtiste,
+    resetPoint
 }

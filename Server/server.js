@@ -9,7 +9,7 @@ const io = require('socket.io')(server, {
         methods: ["GET", "POST"]
       }
 });
-const {userJoin,getCurrentUser,userLeft,getAllPlayerForRoom,addPoint,asAnswerSong,asAnswerArtiste} = require("./utilis/user")
+const {userJoin,getCurrentUser,userLeft,getAllPlayerForRoom,addPoint,asAnswerSong,asAnswerArtiste,resetPoint} = require("./utilis/user")
 const user = require('./utilis/user');
 var CronJob = require('cron').CronJob;
 const cors = require('cors')
@@ -18,10 +18,10 @@ app.use(express.json())
 
 
 io.of("/genre").on("connection",(socket)=>{
-    socket.emit("Welcome","Pret a jouer des coudes");
+    socket.emit("Welcome",socket.id);
 
-    socket.on("disconnect",() =>{
-        const user = userLeft(socket.id);
+    socket.on("disconnectCustom", socketid =>{
+        const user = userLeft(socketid);
         if(user){
             socket.leave(user.room);
             io.of("/genre").to(user.room).emit("suppUser", user.userName+"est partie de :"+user.room);
@@ -33,39 +33,38 @@ io.of("/genre").on("connection",(socket)=>{
     });
 
     socket.on("answer",({answer,goodArtiste,goodSong}) =>{
-        var DiffArtiste = answerVerification(goodArtiste,answer);
-        var DiffSong = answerVerification(goodSong,answer);
+        var cleanedArtiste = cleanUpSpecialChars(goodArtiste.toUpperCase());
+        var cleanedSong = cleanUpSpecialChars(goodSong.toUpperCase());
+        var cleanedAnswer = cleanUpSpecialChars(answer.toUpperCase());
         var currentUser = getCurrentUser(socket.id);
+        
+        DiffArtiste = answerVerification(cleanedArtiste,cleanedAnswer);
+        DiffSong = answerVerification(cleanedSong,cleanedAnswer);
+
         if(!currentUser.answeredArtiste || !currentUser.answeredSong){
-            if(!currentUser.answeredArtiste && DiffArtiste){
-                io.to(socket.id).emit("resultAnswer", "vous avez trouver l'artiste");
-                io.of("/Custom").to(user.room).emit("roomInfo",{
-                    room: user.room,
-                    users: getAllPlayerForRoom(user.room)
-                });
+            if(currentUser.answeredArtiste==false && DiffArtiste){
+                io.of("/genre").to(socket.id).emit("resultArtist", true);
                 asAnswerArtiste(socket.id,true);
                 addPoint(socket.id);
+                io.of("/genre").to(currentUser.room).emit("roomInfo",{
+                    room: user.room,
+                    users: getAllPlayerForRoom(currentUser.room)
+                });
+            
             }else{
                 io.to(socket.id).emit("resultAnswer", "pas bon ou déja répondue");
             }
             
-            if(!currentUser.answeredSong && DiffSong){
-                io.to(socket.id).emit("resultAnswer", "vous avez trouver la chanson");
-                io.of("/Custom").to(user.room).emit("roomInfo",{
-                    room: user.room,
-                    users: getAllPlayerForRoom(user.room)
-                });
+            if(currentUser.answeredSong == false && DiffSong){
+                io.of("/genre").to(socket.id).emit("resultSong",true);
                 asAnswerSong(socket.id,true);
                 addPoint(socket.id);
+                io.of("/genre").to(currentUser.room).emit("roomInfo",{
+                    room: user.room,
+                    users: getAllPlayerForRoom(currentUser.room)
+                });
             }else{
                 io.to(socket.id).emit("resultAnswer", "pas bon ou déja répondue");
-            }
-
-            if(!currentUser.answeredSong && DiffSong === null){
-                io.to(socket.id).emit("resultAnswer", "vous avez presque la chanson");
-            }
-            if(!currentUser.answeredSong && DiffArtiste === null){
-                io.to(socket.id).emit("resultAnswer", "vous avez presque l'artiste");
             }
         }
     })
@@ -73,7 +72,7 @@ io.of("/genre").on("connection",(socket)=>{
     socket.on("joinRoom", ({userName,room,playerImg}) =>{
         const user = userJoin(socket.id,userName,room,0,playerImg,false);
         socket.join(user.room);
-        io.of("/genre").to(user.room).emit("newUser", user.username+" est rentré dans :"+room+" faites lui une ovation");
+        io.of("/genre").to(user.room).emit("newUser", user.username+" est rentré dans: "+room+" faites lui une ovation");
         io.of("/genre").to(user.room).emit("roomInfo",{
             room: user.room,
             users: getAllPlayerForRoom(user.room)
@@ -90,7 +89,7 @@ io.of("/genre").on("connection",(socket)=>{
         const user = getCurrentUser(socket.id);
         var today = new Date();
         var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
-        io.of("/genre").to(user.room).emit('message', {from : user.username,fromImg:user.img, message : msg,time});
+        io.of("/genre").to(user.room).emit('message', {from : user,fromImg:user.img, message : msg,time});
     });
 
     socket.on('chatMessagePrivate', ({idReceiver,msg}) => {
@@ -198,7 +197,6 @@ io.of("/custom").on("connection",(socket)=>{
 });
 
 io.on("connection",(socket) =>{
-    console.log("non monsieur");
 })
 
 app.get('/genres', async function(req, res) {
@@ -384,10 +382,11 @@ function getRandomArbitrary(min, max) {
 
 function sendMusique(of,index,playlist,user){
     var playlistJob = new CronJob('*/30 * * * * *', ()=>{
+        
         if(index >= playlist.length-1){
             playlistJob.stop();
             if(getCurrentUser(user.id)!= undefined){
-                gameFinish(user,45);
+                gameFinish(of,user,45);
             }
         }
         if(getCurrentUser(user.id)!= undefined){
@@ -400,13 +399,21 @@ function sendMusique(of,index,playlist,user){
     playlistJob.start();  
 }
 
-function gameFinish(user,sec){
+function gameFinish(of,user,sec){
     var startGameJob = new CronJob('* * * * * *', ()=>{
-        io.to(user.room).emit('gameRestart',"La partie va recommancer dans "+sec+" sec");
+        io.of(of).to(user.room).emit('gameRestart',"La partie va recommancer dans "+sec+" sec");
         sec--;
         if(sec <= 0){
+            const tempuser = getAllPlayerForRoom(user.room)
+            tempuser.forEach(player =>{
+                resetPoint(player.id)
+            })
             startGameJob.stop();
-            launchGame(user)
+            launchGame(user);
+            io.of("/genre").to(user.room).emit("roomInfo",{
+                room: user.room,
+                users: getAllPlayerForRoom(user.room)
+            });
         }   
     }, null, true, 'Europe/Paris');
     startGameJob.start(); 
@@ -453,11 +460,11 @@ function launchGame(user){
                     let validResponse= [];
                     responsePlaylist.data.tracks.items.forEach(element => {
                         if(element.track.preview_url != null){
-                            validResponse.push({song: element.track.preview_url,artists:element.track.artists,title: element.track.name})
+                            validResponse.push({song: element.track.preview_url,artists:element.track.artists,title: element.track.name,img : element.track.album.images[0].url })
                         }
                     });
-                    var shuffled = validResponse.sort(()=>{return .5 - Math.random()});
-                    var selected=shuffled.slice(0,15);
+                    var selected = validResponse.sort(() => Math.random() - Math.random()).slice(0, 15)
+
                     sendMusique("/genre",0,selected,user);
                 })
                 .catch(function (error) {
@@ -517,32 +524,42 @@ function launchCustomGame(user,playlist){
     })
 }
 
+function cleanUpSpecialChars(str)
+{
+    return str
+        .replace(/[ÀÁÂÃÄÅ]/g,"A")
+        .replace(/[àáâãäå]/g,"a")
+        .replace(/[ÈÉÊË]/g,"E")
+        .replace(/[èéêë]/g,"e")
+        .replace(/[^a-z0-9]/gi,''); // final clean up
+}
+
 function answerVerification(answer, answerOfPlayer)
-  {
-    let arrayAnswer = answer.replace(/\s/g, '').split('');
-    let arrayAnswerOfPlayer = answerOfPlayer.replace(/\s/g, '').split('');
+{
+    let arrayAnswer = answer.split('');
+    let arrayAnswerOfPlayer = answerOfPlayer.split('');
     let difference = array_diff(arrayAnswer, arrayAnswerOfPlayer);
-    if(difference <= 2)
+    if(difference === 0)
     {
         return true;
-    }else if(difference >2){
-        return null;
-    }
-    else{
-        return false
+    }else if(difference <= 2)
+    {
+        return null
+    }else{
+        return false;
     }
 }
 
-function array_diff(array1,array2)
-  {
-    let count = 0;
+function array_diff(array1, array2)
+{
+    let diffArray = 0;
     if(array1.length >= array2.length)
     {
       for(let i = 0; i <= array1.length;i++)
       {
         if(array1[i] !== array2[i])
         {
-          count = count+1;
+          diffArray = diffArray+1;
         }
       }
     }else{
@@ -550,9 +567,9 @@ function array_diff(array1,array2)
       {
         if(array2[i] !== array1[i])
         {
-          count = count+1;
+          diffArray = diffArray+1;
         }
       }
     }
-    return count;
+    return diffArray;
 }
