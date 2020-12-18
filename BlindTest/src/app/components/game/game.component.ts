@@ -31,6 +31,8 @@ export class GameComponent implements OnInit,OnDestroy {
   isSongFound = false;
   isArtistFound = false;
   arrivedPlayer = []
+  isGameFinished = false;
+  gameRestart:any
 
 
   constructor(private router: Router,private route: ActivatedRoute,private blindTestService:BlindtestService) { }
@@ -65,6 +67,7 @@ export class GameComponent implements OnInit,OnDestroy {
     })
 
     this.blindTestService.listen("playlist").subscribe((data:any) =>{
+      this.isGameFinished = false;
       this.isArtistFound = false;
       this.isSongFound = false;
       this.audio.src = data.song;
@@ -81,7 +84,7 @@ export class GameComponent implements OnInit,OnDestroy {
     })
 
     this.blindTestService.listen("gameRestart").subscribe((data:any) =>{
-     console.log(data);
+      this.gameRestart = data;
     })
     this.blindTestService.listen("resultArtist").subscribe((data:any) =>{
       this.isArtistFound = data;
@@ -115,8 +118,12 @@ export class GameComponent implements OnInit,OnDestroy {
   historic(data){
     setTimeout(()=>{this.musicsPlayed.push(data)}, 30000)
   }
+  
+  
   sendPublicMessage(){
-    this.blindTestService.emit("chatMessage", this.publicMessage);
-    this.publicMessage = "";
+    if(this.publicMessage !=undefined && this.publicMessage !="" && this.publicMessage !=" "){
+      this.blindTestService.emit("chatMessage", this.publicMessage);
+      this.publicMessage = "";
+    }
   }
 }

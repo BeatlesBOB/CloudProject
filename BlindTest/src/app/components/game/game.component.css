@@ -234,3 +234,60 @@
   padding-right: 10px;
   margin: 0!important;
 }
+
+.modal {
+  display: block; 
+  position: fixed; 
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgb(0,0,0);
+  background-color: rgba(0,0,0,0.4);
+}
+.modal-content {
+  background-color: #fefefe;
+  margin: 15% auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%;
+}
+.close {
+  position: absolute;
+  color: #FA065E;
+  float: right;
+  font-size: 50px!important;
+  font-weight: bold;
+}
+.close:hover,
+.close:focus {
+  color: #FE3B81;
+  text-decoration: none;
+  cursor: pointer;
+}
+.score--card {
+  font-size: 1.5rem;
+  font-weight: 300;
+}
+.nb_score{
+  font-weight: 900;
+  font-size: 2.5rem;
+}
+.user_img_score{
+  height: 80px;
+  width: 80px;
+}
+.score-card{
+  width: 100%!important;
+}
+.user_name_score{
+  font-size: 1.5rem;
+  font-weight: 300;
+}
+.score-wait{
+  font-size: 1rem;
+  font-weight: 300;
+  font-style: italic;
+}

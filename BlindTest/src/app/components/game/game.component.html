@@ -1,4 +1,4 @@
-<div class="container all-center">
+<div *ngIf="asReceivedMusique"class="container all-center">
     <div class="row d-flex justify-content-center">
       <!-- LIEN PARTIE -->
       <div class="col-12 d-flex justify-content-center px-0 mx-0">
@@ -78,12 +78,12 @@
                 
               </div>
               <div class="card-footer mb-1">
-                <form action="" method="get" class="input-group">
+                <div action="" method="get" class="input-group">
                   <input id="text_msg" name="text_msg" class="form-control type_msg" (keyup.enter)="sendPublicMessage()"placeholder="Ecris ton message..."[(ngModel)]="publicMessage">
                   <div class="input-group-append">
                     <button  class="input-group-text send_btn"(click)="sendPublicMessage()"><i class="fas fa-location-arrow"></i></button>
                   </div>
-                </form>
+                </div>
               </div>
             </div>
           </div>
@@ -134,59 +134,6 @@
     </div>
     <div class="d-flex justify-content-center">
       <img src="../../../assets/img/waiting.svg">
-    </div>
-  </div>
-</div>
-
-
-
-<!-- Modal -->
-<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content p-2">
-      <div class="d-flex justify-content-center px-0 mx-0">      
-        <div class="score-card d-flex justify-content-center">
-          <div class="card">
-            <div class="d-flex justify-content-end"><span class="close">&times;</span></div>          
-            <div id="affichage" class="card-body txt_card_body px-0 py-3 color-dark">
-              <h3 class="title--card my-0">FIN DE LA PARTIE</h3>
-              <h4 class="score--card my-0 mt-1"><strong>Mon score</strong> : 69 pts</h4>
-              <h3 class="title--card my-0 mt-5">CLASSEMENT FINAL :</h3>
-              <div class="row mx-0 px-3 mt-3">              
-                <div class="col-4 d-flex align-items-center px-3 mx-0 mb-3">
-                  <div class="nb_score">1.</div>
-                  <img src="images/obi_wan.jpg" class="rounded-circle user_img_score">
-                  <div style="margin-left: 0.5rem;">
-                    <p class="m-0 p-0 user_name_score"><strong>Obi-wan Ademo</strong> : 69 pts</p>
-                  </div>
-                </div>
-  
-                <div class="col-4 d-flex align-items-center px-3 mx-0 mb-3">
-                  <div class="nb_score">2.</div>
-                  <img src="images/pnl.png" class="rounded-circle user_img_score">
-                  <div style="margin-left: 0.5rem;">
-                    <p class="m-0 p-0 user_name_score"><strong>Alderiate</strong> : 53 pts</p>
-                  </div>
-                </div>
-  
-                <div class="col-4 d-flex align-items-center px-3 mx-0 mb-3">
-                  <div class="nb_score">3.</div>
-                  <img src="images/boba.jpg" class="rounded-circle user_img_score">
-                  <div style="margin-left: 0.5rem;">
-                    <p class="m-0 p-0 user_name_score"><strong>joueur nul</strong> : 13 pts</p>
-                  </div>
-                </div>
-              </div>
-              <div class="text-center mt-5">
-                <p class="score-wait">En attente de la prochaine partie...</p>
-                <div class="spinner-border" role="status">
-                  <span class="sr-only">Loading...</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>          
-      </div>
     </div>
   </div>
 </div>

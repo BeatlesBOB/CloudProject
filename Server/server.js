@@ -32,6 +32,18 @@ io.of("/genre").on("connection",(socket)=>{
         }
     });
 
+    socket.on("disconnect",() =>{
+        const user = userLeft(socket.id);
+        if(user){
+            socket.leave(user.room);
+            io.of("/Custom").to(user.room).emit("suppUser", user.userName+"est partie de :"+user.room);
+            io.of("/Custom").to(user.room).emit("roomInfo",{
+                room: user.room,
+                users: getAllPlayerForRoom(user.room)
+            });
+        }
+    });
+
     socket.on("answer",({answer,goodArtiste,goodSong}) =>{
         var cleanedArtiste = cleanUpSpecialChars(goodArtiste.toUpperCase());
         var cleanedSong = cleanUpSpecialChars(goodSong.toUpperCase());
@@ -106,6 +118,18 @@ io.of("/custom").on("connection",(socket)=>{
     
     socket.emit("Bienvenue","Pret a jouer des coudes");
     
+    socket.on("disconnectCustom", socketid =>{
+        const user = userLeft(socketid);
+        if(user){
+            socket.leave(user.room);
+            io.of("/genre").to(user.room).emit("suppUser", user.userName+"est partie de :"+user.room);
+            io.of("/genre").to(user.room).emit("roomInfo",{
+                room: user.room,
+                users: getAllPlayerForRoom(user.room)
+            });
+        }
+    });
+    
     socket.on("disconnect",() =>{
         const user = userLeft(socket.id);
         if(user){
@@ -119,39 +143,38 @@ io.of("/custom").on("connection",(socket)=>{
     });
 
     socket.on("answer",({answer,goodArtiste,goodSong}) =>{
-        var DiffArtiste = answerVerification(goodArtiste,answer);
-        var DiffSong = answerVerification(goodSong,answer);
+        var cleanedArtiste = cleanUpSpecialChars(goodArtiste.toUpperCase());
+        var cleanedSong = cleanUpSpecialChars(goodSong.toUpperCase());
+        var cleanedAnswer = cleanUpSpecialChars(answer.toUpperCase());
         var currentUser = getCurrentUser(socket.id);
+        
+        DiffArtiste = answerVerification(cleanedArtiste,cleanedAnswer);
+        DiffSong = answerVerification(cleanedSong,cleanedAnswer);
+
         if(!currentUser.answeredArtiste || !currentUser.answeredSong){
-            if(!currentUser.answeredArtiste && DiffArtiste){
-                io.to(socket.id).emit("resultAnswer", "vous avez trouver l'artiste");
-                io.of("/Custom").to(user.room).emit("roomInfo",{
-                    room: user.room,
-                    users: getAllPlayerForRoom(user.room)
-                });
+            if(currentUser.answeredArtiste==false && DiffArtiste){
+                io.of("/genre").to(socket.id).emit("resultArtist", true);
                 asAnswerArtiste(socket.id,true);
                 addPoint(socket.id);
+                io.of("/genre").to(currentUser.room).emit("roomInfo",{
+                    room: user.room,
+                    users: getAllPlayerForRoom(currentUser.room)
+                });
+            
             }else{
                 io.to(socket.id).emit("resultAnswer", "pas bon ou déja répondue");
             }
             
-            if(!currentUser.answeredSong && DiffSong){
-                io.to(socket.id).emit("resultAnswer", "vous avez trouver la chanson");
-                io.of("/Custom").to(user.room).emit("roomInfo",{
-                    room: user.room,
-                    users: getAllPlayerForRoom(user.room)
-                });
+            if(currentUser.answeredSong == false && DiffSong){
+                io.of("/genre").to(socket.id).emit("resultSong",true);
                 asAnswerSong(socket.id,true);
                 addPoint(socket.id);
+                io.of("/genre").to(currentUser.room).emit("roomInfo",{
+                    room: user.room,
+                    users: getAllPlayerForRoom(currentUser.room)
+                });
             }else{
                 io.to(socket.id).emit("resultAnswer", "pas bon ou déja répondue");
-            }
-
-            if(!currentUser.answeredSong && DiffSong === null){
-                io.to(socket.id).emit("resultAnswer", "vous avez presque la chanson");
-            }
-            if(!currentUser.answeredSong && DiffArtiste === null){
-                io.to(socket.id).emit("resultAnswer", "vous avez presque l'artiste");
             }
         }
     })
@@ -463,7 +486,7 @@ function launchGame(user){
                             validResponse.push({song: element.track.preview_url,artists:element.track.artists,title: element.track.name,img : element.track.album.images[0].url })
                         }
                     });
-                    var selected = validResponse.sort(() => Math.random() - Math.random()).slice(0, 15)
+                    var selected = validResponse.sort(() => Math.random() - Math.random()).slice(0, 2)
 
                     sendMusique("/genre",0,selected,user);
                 })
